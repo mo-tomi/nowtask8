@@ -1,0 +1,253 @@
+/* ====================================
+   カレンダー - パターンE（数字のみ）
+   ==================================== */
+
+.calendar-section {
+  padding: 0;
+  background: white;
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+/* カレンダーコンテナ */
+.calendar-container {
+  max-width: 375px;
+  margin: 0 auto;
+  background: white;
+}
+
+/* 月ナビゲーション */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.month-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.nav-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: #1a1a1a;
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
+}
+
+.nav-btn:hover {
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.nav-btn:active {
+  background: #e5e5e5;
+}
+
+/* 曜日ヘッダー */
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 8px 12px 6px;
+  border-bottom: 1px solid #f0f0f0;
+  background: white;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #999;
+}
+
+.weekday.sunday {
+  color: #ff6666;
+}
+
+.weekday.saturday {
+  color: #6699ff;
+}
+
+/* カレンダーグリッド */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 8px;
+  gap: 3px;
+}
+
+/* 日付セル */
+.day-cell {
+  aspect-ratio: 1;
+  background: white;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s;
+}
+
+.day-cell:hover {
+  background: #fafafa;
+}
+
+.day-cell.other-month {
+  background: #fafafa;
+}
+
+.day-cell.other-month .day-number {
+  color: #ddd;
+}
+
+.day-cell.today {
+  border-color: #1a1a1a;
+  border-width: 2px;
+  background: #f8f8f8;
+}
+
+.day-cell.selected {
+  background: #f0f0f0;
+  border-color: #666;
+}
+
+/* 日付番号 */
+.day-number {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 2px;
+  line-height: 1;
+}
+
+.day-cell.sunday .day-number {
+  color: #ff6666;
+}
+
+.day-cell.saturday .day-number {
+  color: #6699ff;
+}
+
+.day-cell.today .day-number {
+  background: #1a1a1a;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+/* パターンE: 数字のみ */
+.day-tasks {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: #999;
+}
+
+.day-cell.has-tasks .task-count {
+  color: #666;
+}
+
+/* 選択された日のタスク一覧 */
+.selected-day-tasks {
+  display: none;
+  padding: 16px;
+  border-top: 8px solid #f5f5f5;
+}
+
+.selected-day-tasks.visible {
+  display: block;
+}
+
+.selected-day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.selected-day-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.close-day-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #f5f5f5;
+  border-radius: 50%;
+  color: #666;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.close-day-btn:hover {
+  background: #e5e5e5;
+}
+
+.selected-day-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* カレンダーサイズ調整（日付選択時） */
+.calendar-container.with-selected-day .month-nav,
+.calendar-container.with-selected-day .weekdays,
+.calendar-container.with-selected-day .calendar-grid {
+  pointer-events: auto;
+}
+
+.calendar-container.with-selected-day .calendar-grid {
+  gap: 2px;
+  padding: 6px;
+}
+
+.calendar-container.with-selected-day .day-cell {
+  padding: 3px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 375px) {
+  .day-number {
+    font-size: 12px;
+  }
+
+  .task-count {
+    font-size: 12px;
+  }
+
+  .calendar-grid {
+    gap: 2px;
+    padding: 6px;
+  }
+}

@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nowtask - カレンダー表示パターン比較</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 375px;
+            margin: 0 auto;
+            background: white;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+            padding: 16px 16px 0;
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 16px;
+            font-size: 13px;
+            padding: 0 16px 16px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .patterns-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .pattern-card {
+            background: white;
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: none;
+            border-bottom: 8px solid #f5f5f5;
+        }
+
+        .pattern-header {
+            padding: 16px;
+            background: #fafafa;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .pattern-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+
+        .pattern-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .phone-frame {
+            width: 100%;
+            background: white;
+            position: relative;
+        }
+
+        /* 共通：ヘッダー */
+        .header {
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .month-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .month-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .nav-btn {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: none;
+            color: #1a1a1a;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        /* 共通：曜日ヘッダー */
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            padding: 8px 12px 6px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .weekday {
+            text-align: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: #999;
+        }
+
+        .weekday.sunday { color: #ff6666; }
+        .weekday.saturday { color: #6699ff; }
+
+        /* 共通：カレンダーグリッド */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            padding: 8px;
+            gap: 3px;
+        }
+
+        .day-cell {
+            aspect-ratio: 1;
+            background: white;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            padding: 4px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .day-cell:hover {
+            background: #fafafa;
+        }
+
+        .day-cell.other-month {
+            background: #fafafa;
+        }
+
+        .day-cell.other-month .day-number {
+            color: #ddd;
+        }
+
+        .day-cell.today {
+            border-color: #1a1a1a;
+            border-width: 2px;
+            background: #f8f8f8;
+        }
+
+        .day-number {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+            line-height: 1;
+        }
+
+        .day-cell.sunday .day-number { color: #ff6666; }
+        .day-cell.saturday .day-number { color: #6699ff; }
+
+        .day-cell.today .day-number {
+            background: #1a1a1a;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        /* パターンA: タスク名表示（推奨） */
+        .pattern-a .day-tasks {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .pattern-a .task-item {
+            font-size: 9px;
+            color: #666;
+            padding-left: 4px;
+            border-left: 2px solid #ddd;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pattern-a .task-item.priority-high {
+            border-left-color: #ff4444;
+            color: #333;
+        }
+
+        .pattern-a .task-item.priority-medium {
+            border-left-color: #ffaa00;
+        }
+
+        .pattern-a .task-item.priority-low {
+            border-left-color: #4488ff;
+        }
+
+        .pattern-a .more-tasks {
+            font-size: 8px;
+            color: #999;
+            padding-left: 4px;
+            margin-top: 1px;
+        }
+
+        /* パターンB: タスク名（大きめフォント） */
+        .pattern-b .day-tasks {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .pattern-b .task-item {
+            font-size: 10px;
+            color: #333;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 2px 3px;
+            background: #f5f5f5;
+            border-radius: 3px;
+        }
+
+        .pattern-b .task-item.priority-high {
+            background: #fff0f0;
+            color: #cc0000;
+        }
+
+        .pattern-b .task-item.priority-medium {
+            background: #fff8e6;
+            color: #996600;
+        }
+
+        .pattern-b .task-item.priority-low {
+            background: #f0f5ff;
+            color: #0055cc;
+        }
+
+        .pattern-b .more-tasks {
+            font-size: 9px;
+            color: #999;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* パターンC: バー表示 */
+        .pattern-c .day-tasks {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .pattern-c .task-bar {
+            height: 3px;
+            background: #ddd;
+            border-radius: 2px;
+        }
+
+        .pattern-c .task-bar.priority-high { background: #ff4444; }
+        .pattern-c .task-bar.priority-medium { background: #ffaa00; }
+        .pattern-c .task-bar.priority-low { background: #4488ff; }
+
+        .pattern-c .task-count {
+            font-size: 9px;
+            color: #999;
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        /* パターンD: ドット表示 */
+        .pattern-d .day-tasks {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pattern-d .task-dots {
+            display: flex;
+            gap: 2px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pattern-d .task-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .pattern-d .task-dot.priority-high { background: #ff4444; }
+        .pattern-d .task-dot.priority-medium { background: #ffaa00; }
+        .pattern-d .task-dot.priority-low { background: #4488ff; }
+
+        /* パターンE: 数字のみ */
+        .pattern-e .day-tasks {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pattern-e .task-count {
+            font-size: 14px;
+            font-weight: 700;
+            color: #999;
+        }
+
+        .pattern-e .day-cell.has-tasks .task-count {
+            color: #666;
+        }
+
+        /* パターンF: 最小限（背景色のみ） */
+        .pattern-f .day-cell.has-tasks {
+            background: #f8f8f8;
+            border-color: #e0e0e0;
+        }
+
+        .pattern-f .day-cell.has-high-priority {
+            background: #fff5f5;
+            border-color: #ffcccc;
+        }
+
+        .pattern-f .day-cell.today.has-tasks {
+            background: #f0f0f0;
+        }
+
+        /* 推奨バッジ */
+        .recommended {
+            display: inline-block;
+            background: #1a1a1a;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 カレンダー表示パターン比較</h1>
+        <p class="description">
+            日付マスが小さい中で、タスク情報をどう表示するか。6つのパターンを比較してください。<br>
+            ※実際には日付タップで下部に詳細が表示されます。
+        </p>
+
+        <div class="patterns-grid">
+            <!-- パターンA: タスク名表示（最初のタスク + +N件） -->
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <div class="pattern-title">
+                        パターンA: タスク名表示
+                        <span class="recommended">推奨</span>
+                    </div>
+                    <div class="pattern-description">
+                        最初のタスクだけ表示 + 残りは「+2」など<br>
+                        ・何のタスクがあるか一目でわかる<br>
+                        ・9pxフォントでコンパクト
+                    </div>
+                </div>
+                <div class="phone-frame pattern-a">
+                    <div class="header">
+                        <div class="month-nav">
+                            <button class="nav-btn">◀</button>
+                            <div class="month-title">2025年10月</div>
+                            <button class="nav-btn">▶</button>
+                        </div>
+                    </div>
+                    <div class="weekdays">
+                        <div class="weekday sunday">日</div>
+                        <div class="weekday">月</div>
+                        <div class="weekday">火</div>
+                        <div class="weekday">水</div>
+                        <div class="weekday">木</div>
+                        <div class="weekday">金</div>
+                        <div class="weekday saturday">土</div>
+                    </div>
+                    <div class="calendar-grid">
+                        <!-- 9月の日付 -->
+                        <div class="day-cell other-month"><div class="day-number">29</div></div>
+                        <div class="day-cell other-month"><div class="day-number">30</div></div>
+                        <!-- 10月 -->
+                        <div class="day-cell">
+                            <div class="day-number">1</div>
+                            <div class="day-tasks">
+                                <div class="task-item priority-high">会議</div>
+                                <div class="task-item">買い物</div>
+                                <div class="more-tasks">+1</div>
+                            </div>
+                        </div>
+                        <div class="day-cell">
+                            <div class="day-number">2</div>
+                            <div class="day-tasks">
+                                <div class="task-item">歯医者</div>
+                            </div>
+                        </div>
+                        <div class="day-cell">
+                            <div class="day-number">3</div>
+                        </div>
+                        <div class="day-cell">
+                            <div class="day-number">4</div>
+                            <div class="day-tasks">
+                                <div class="task-item priority-medium">資料作成</div>
+                                <div class="more-tasks">+3</div>
+                            </div>
+                        </div>
+                        <div class="day-cell saturday">
+                            <div class="day-number">5</div>
+                        </div>
+                        <div class="day-cell sunday">
+                            <div class="day-number">6</div>
+                            <div class="day-tasks">
+                                <div class="task-item">掃除</div>
+                            </div>
+                        </div>
+                        <div class="day-cell">
+                            <div class="day-number">7</div>
+                            <div class="day-tasks">
+                                <div class="task-item priority-low">運動</div>
+                            </div>
+                        </div>
+                        <!-- 以下省略して24日まで -->
+                        <div class="day-cell"><div class="day-number">8</div></div>
+                        <div class="day-cell"><div class="day-number">9</div></div>
+                        <div class="day-cell"><div class="day-number">10</div></div>
+                        <div class="day-cell"><div class="day-number">11</div></div>
+                        <div class="day-cell"><div class="day-number">12</div></div>
+                        <div class="day-cell"><div class="day-number">13</div></div>
+                        <div class="day-cell"><div class="day-number">14</div></div>
+                        <div class="day-cell"><div class="day-number">15</div></div>
+                        <div class="day-cell"><div class="day-number">16</div></div>
+                        <div class="day-cell"><div class="day-number">17</div></div>
+                        <div class="day-cell"><div class="day-number">18</div></div>
+                        <div class="day-cell"><div class="day-number">19</div></div>
+                        <div class="day-cell"><div class="day-number">20</div></div>
+                        <div class="day-cell"><div class="day-number">21</div></div>
+                        <div class="day-cell"><div class="day-number">22</div></div>
+                        <div class="day-cell"><div class="day-number">23</div></div>
+                        <div class="day-cell today">
+                            <div class="day-number">24</div>
+                            <div class="day-tasks">
+                                <div class="task-item priority-high">打ち合わせ</div>
+                                <div class="more-tasks">+2</div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">25</div></div>
+                        <div class="day-cell"><div class="day-number">26</div></div>
+                        <div class="day-cell"><div class="day-number">27</div></div>
+                        <div class="day-cell"><div class="day-number">28</div></div>
+                        <div class="day-cell"><div class="day-number">29</div></div>
+                        <div class="day-cell"><div class="day-number">30</div></div>
+                        <div class="day-cell"><div class="day-number">31</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- パターンB: タスク名（大きめ・背景色付き） -->
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <div class="pattern-title">パターンB: タスク名（大きめ）</div>
+                    <div class="pattern-description">
+                        フォントを大きく、背景色で優先度を表現<br>
+                        ・見やすい<br>
+                        ・少し派手
+                    </div>
+                </div>
+                <div class="phone-frame pattern-b">
+                    <div class="header">
+                        <div class="month-nav">
+                            <button class="nav-btn">◀</button>
+                            <div class="month-title">2025年10月</div>
+                            <button class="nav-btn">▶</button>
+                        </div>
+                    </div>
+                    <div class="weekdays">
+                        <div class="weekday sunday">日</div>
+                        <div class="weekday">月</div>
+                        <div class="weekday">火</div>
+                        <div class="weekday">水</div>
+                        <div class="weekday">木</div>
+                        <div class="weekday">金</div>
+                        <div class="weekday saturday">土</div>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="day-cell other-month"><div class="day-number">29</div></div>
+                        <div class="day-cell other-month"><div class="day-number">30</div></div>
+                        <div class="day-cell">
+                            <div class="day-number">1</div>
+                            <div class="day-tasks">
+                                <div class="task-item priority-high">会議</div>
+                                <div class="more-tasks">+2</div>
+                            </div>
+                        </div>
+                        <div class="day-cell">
+                            <div class="day-number">2</div>
+                            <div class="day-tasks">
+                                <div class="task-item">歯医者</div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">3</div></div>
+                        <div class="day-cell">
+                            <div class="day-number">4</div>
+                            <div class="day-tasks">
+                                <div class="task-item priority-medium">資料</div>
+                                <div class="more-tasks">+3</div>
+                            </div>
+                        </div>
+                        <div class="day-cell saturday"><div class="day-number">5</div></div>
+                        <div class="day-cell sunday">
+                            <div class="day-number">6</div>
+                            <div class="day-tasks">
+                                <div class="task-item">掃除</div>
+                            </div>
+                        </div>
+                        <div class="day-cell">
+                            <div class="day-number">7</div>
+                            <div class="day-tasks">
+                                <div class="task-item priority-low">運動</div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">8</div></div>
+                        <div class="day-cell"><div class="day-number">9</div></div>
+                        <div class="day-cell"><div class="day-number">10</div></div>
+                        <div class="day-cell"><div class="day-number">11</div></div>
+                        <div class="day-cell"><div class="day-number">12</div></div>
+                        <div class="day-cell"><div class="day-number">13</div></div>
+                        <div class="day-cell"><div class="day-number">14</div></div>
+                        <div class="day-cell"><div class="day-number">15</div></div>
+                        <div class="day-cell"><div class="day-number">16</div></div>
+                        <div class="day-cell"><div class="day-number">17</div></div>
+                        <div class="day-cell"><div class="day-number">18</div></div>
+                        <div class="day-cell"><div class="day-number">19</div></div>
+                        <div class="day-cell"><div class="day-number">20</div></div>
+                        <div class="day-cell"><div class="day-number">21</div></div>
+                        <div class="day-cell"><div class="day-number">22</div></div>
+                        <div class="day-cell"><div class="day-number">23</div></div>
+                        <div class="day-cell today">
+                            <div class="day-number">24</div>
+                            <div class="day-tasks">
+                                <div class="task-item priority-high">打合せ</div>
+                                <div class="more-tasks">+2</div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">25</div></div>
+                        <div class="day-cell"><div class="day-number">26</div></div>
+                        <div class="day-cell"><div class="day-number">27</div></div>
+                        <div class="day-cell"><div class="day-number">28</div></div>
+                        <div class="day-cell"><div class="day-number">29</div></div>
+                        <div class="day-cell"><div class="day-number">30</div></div>
+                        <div class="day-cell"><div class="day-number">31</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- パターンC: バー表示 -->
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <div class="pattern-title">パターンC: バー表示</div>
+                    <div class="pattern-description">
+                        色付きバーでタスクを表現<br>
+                        ・シンプル<br>
+                        ・タスク名はわからない
+                    </div>
+                </div>
+                <div class="phone-frame pattern-c">
+                    <div class="header">
+                        <div class="month-nav">
+                            <button class="nav-btn">◀</button>
+                            <div class="month-title">2025年10月</div>
+                            <button class="nav-btn">▶</button>
+                        </div>
+                    </div>
+                    <div class="weekdays">
+                        <div class="weekday sunday">日</div>
+                        <div class="weekday">月</div>
+                        <div class="weekday">火</div>
+                        <div class="weekday">水</div>
+                        <div class="weekday">木</div>
+                        <div class="weekday">金</div>
+                        <div class="weekday saturday">土</div>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="day-cell other-month"><div class="day-number">29</div></div>
+                        <div class="day-cell other-month"><div class="day-number">30</div></div>
+                        <div class="day-cell">
+                            <div class="day-number">1</div>
+                            <div class="day-tasks">
+                                <div class="task-bar priority-high"></div>
+                                <div class="task-bar"></div>
+                                <div class="task-bar"></div>
+                            </div>
+                        </div>
+                        <div class="day-cell">
+                            <div class="day-number">2</div>
+                            <div class="day-tasks">
+                                <div class="task-bar"></div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">3</div></div>
+                        <div class="day-cell">
+                            <div class="day-number">4</div>
+                            <div class="day-tasks">
+                                <div class="task-bar priority-medium"></div>
+                                <div class="task-bar"></div>
+                                <div class="task-count">+2</div>
+                            </div>
+                        </div>
+                        <div class="day-cell saturday"><div class="day-number">5</div></div>
+                        <div class="day-cell sunday">
+                            <div class="day-number">6</div>
+                            <div class="day-tasks">
+                                <div class="task-bar"></div>
+                            </div>
+                        </div>
+                        <div class="day-cell">
+                            <div class="day-number">7</div>
+                            <div class="day-tasks">
+                                <div class="task-bar priority-low"></div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">8</div></div>
+                        <div class="day-cell"><div class="day-number">9</div></div>
+                        <div class="day-cell"><div class="day-number">10</div></div>
+                        <div class="day-cell"><div class="day-number">11</div></div>
+                        <div class="day-cell"><div class="day-number">12</div></div>
+                        <div class="day-cell"><div class="day-number">13</div></div>
+                        <div class="day-cell"><div class="day-number">14</div></div>
+                        <div class="day-cell"><div class="day-number">15</div></div>
+                        <div class="day-cell"><div class="day-number">16</div></div>
+                        <div class="day-cell"><div class="day-number">17</div></div>
+                        <div class="day-cell"><div class="day-number">18</div></div>
+                        <div class="day-cell"><div class="day-number">19</div></div>
+                        <div class="day-cell"><div class="day-number">20</div></div>
+                        <div class="day-cell"><div class="day-number">21</div></div>
+                        <div class="day-cell"><div class="day-number">22</div></div>
+                        <div class="day-cell"><div class="day-number">23</div></div>
+                        <div class="day-cell today">
+                            <div class="day-number">24</div>
+                            <div class="day-tasks">
+                                <div class="task-bar priority-high"></div>
+                                <div class="task-bar"></div>
+                                <div class="task-bar"></div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">25</div></div>
+                        <div class="day-cell"><div class="day-number">26</div></div>
+                        <div class="day-cell"><div class="day-number">27</div></div>
+                        <div class="day-cell"><div class="day-number">28</div></div>
+                        <div class="day-cell"><div class="day-number">29</div></div>
+                        <div class="day-cell"><div class="day-number">30</div></div>
+                        <div class="day-cell"><div class="day-number">31</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- パターンD: ドット表示 -->
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <div class="pattern-title">パターンD: ドット表示</div>
+                    <div class="pattern-description">
+                        色付きドットでタスクを表現<br>
+                        ・コンパクト<br>
+                        ・タスク名はわからない
+                    </div>
+                </div>
+                <div class="phone-frame pattern-d">
+                    <div class="header">
+                        <div class="month-nav">
+                            <button class="nav-btn">◀</button>
+                            <div class="month-title">2025年10月</div>
+                            <button class="nav-btn">▶</button>
+                        </div>
+                    </div>
+                    <div class="weekdays">
+                        <div class="weekday sunday">日</div>
+                        <div class="weekday">月</div>
+                        <div class="weekday">火</div>
+                        <div class="weekday">水</div>
+                        <div class="weekday">木</div>
+                        <div class="weekday">金</div>
+                        <div class="weekday saturday">土</div>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="day-cell other-month"><div class="day-number">29</div></div>
+                        <div class="day-cell other-month"><div class="day-number">30</div></div>
+                        <div class="day-cell">
+                            <div class="day-number">1</div>
+                            <div class="day-tasks">
+                                <div class="task-dots">
+                                    <div class="task-dot priority-high"></div>
+                                    <div class="task-dot"></div>
+                                    <div class="task-dot"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="day-cell">
+                            <div class="day-number">2</div>
+                            <div class="day-tasks">
+                                <div class="task-dots">
+                                    <div class="task-dot"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">3</div></div>
+                        <div class="day-cell">
+                            <div class="day-number">4</div>
+                            <div class="day-tasks">
+                                <div class="task-dots">
+                                    <div class="task-dot priority-medium"></div>
+                                    <div class="task-dot"></div>
+                                    <div class="task-dot"></div>
+                                    <div class="task-dot"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="day-cell saturday"><div class="day-number">5</div></div>
+                        <div class="day-cell sunday">
+                            <div class="day-number">6</div>
+                            <div class="day-tasks">
+                                <div class="task-dots">
+                                    <div class="task-dot"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="day-cell">
+                            <div class="day-number">7</div>
+                            <div class="day-tasks">
+                                <div class="task-dots">
+                                    <div class="task-dot priority-low"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">8</div></div>
+                        <div class="day-cell"><div class="day-number">9</div></div>
+                        <div class="day-cell"><div class="day-number">10</div></div>
+                        <div class="day-cell"><div class="day-number">11</div></div>
+                        <div class="day-cell"><div class="day-number">12</div></div>
+                        <div class="day-cell"><div class="day-number">13</div></div>
+                        <div class="day-cell"><div class="day-number">14</div></div>
+                        <div class="day-cell"><div class="day-number">15</div></div>
+                        <div class="day-cell"><div class="day-number">16</div></div>
+                        <div class="day-cell"><div class="day-number">17</div></div>
+                        <div class="day-cell"><div class="day-number">18</div></div>
+                        <div class="day-cell"><div class="day-number">19</div></div>
+                        <div class="day-cell"><div class="day-number">20</div></div>
+                        <div class="day-cell"><div class="day-number">21</div></div>
+                        <div class="day-cell"><div class="day-number">22</div></div>
+                        <div class="day-cell"><div class="day-number">23</div></div>
+                        <div class="day-cell today">
+                            <div class="day-number">24</div>
+                            <div class="day-tasks">
+                                <div class="task-dots">
+                                    <div class="task-dot priority-high"></div>
+                                    <div class="task-dot"></div>
+                                    <div class="task-dot"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">25</div></div>
+                        <div class="day-cell"><div class="day-number">26</div></div>
+                        <div class="day-cell"><div class="day-number">27</div></div>
+                        <div class="day-cell"><div class="day-number">28</div></div>
+                        <div class="day-cell"><div class="day-number">29</div></div>
+                        <div class="day-cell"><div class="day-number">30</div></div>
+                        <div class="day-cell"><div class="day-number">31</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- パターンE: 数字のみ -->
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <div class="pattern-title">パターンE: 数字のみ</div>
+                    <div class="pattern-description">
+                        タスク数だけを表示<br>
+                        ・最もシンプル<br>
+                        ・何があるかはわからない
+                    </div>
+                </div>
+                <div class="phone-frame pattern-e">
+                    <div class="header">
+                        <div class="month-nav">
+                            <button class="nav-btn">◀</button>
+                            <div class="month-title">2025年10月</div>
+                            <button class="nav-btn">▶</button>
+                        </div>
+                    </div>
+                    <div class="weekdays">
+                        <div class="weekday sunday">日</div>
+                        <div class="weekday">月</div>
+                        <div class="weekday">火</div>
+                        <div class="weekday">水</div>
+                        <div class="weekday">木</div>
+                        <div class="weekday">金</div>
+                        <div class="weekday saturday">土</div>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="day-cell other-month"><div class="day-number">29</div></div>
+                        <div class="day-cell other-month"><div class="day-number">30</div></div>
+                        <div class="day-cell has-tasks">
+                            <div class="day-number">1</div>
+                            <div class="day-tasks">
+                                <div class="task-count">3</div>
+                            </div>
+                        </div>
+                        <div class="day-cell has-tasks">
+                            <div class="day-number">2</div>
+                            <div class="day-tasks">
+                                <div class="task-count">1</div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">3</div></div>
+                        <div class="day-cell has-tasks">
+                            <div class="day-number">4</div>
+                            <div class="day-tasks">
+                                <div class="task-count">4</div>
+                            </div>
+                        </div>
+                        <div class="day-cell saturday"><div class="day-number">5</div></div>
+                        <div class="day-cell sunday has-tasks">
+                            <div class="day-number">6</div>
+                            <div class="day-tasks">
+                                <div class="task-count">1</div>
+                            </div>
+                        </div>
+                        <div class="day-cell has-tasks">
+                            <div class="day-number">7</div>
+                            <div class="day-tasks">
+                                <div class="task-count">1</div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">8</div></div>
+                        <div class="day-cell"><div class="day-number">9</div></div>
+                        <div class="day-cell"><div class="day-number">10</div></div>
+                        <div class="day-cell"><div class="day-number">11</div></div>
+                        <div class="day-cell"><div class="day-number">12</div></div>
+                        <div class="day-cell"><div class="day-number">13</div></div>
+                        <div class="day-cell"><div class="day-number">14</div></div>
+                        <div class="day-cell"><div class="day-number">15</div></div>
+                        <div class="day-cell"><div class="day-number">16</div></div>
+                        <div class="day-cell"><div class="day-number">17</div></div>
+                        <div class="day-cell"><div class="day-number">18</div></div>
+                        <div class="day-cell"><div class="day-number">19</div></div>
+                        <div class="day-cell"><div class="day-number">20</div></div>
+                        <div class="day-cell"><div class="day-number">21</div></div>
+                        <div class="day-cell"><div class="day-number">22</div></div>
+                        <div class="day-cell"><div class="day-number">23</div></div>
+                        <div class="day-cell today has-tasks">
+                            <div class="day-number">24</div>
+                            <div class="day-tasks">
+                                <div class="task-count">3</div>
+                            </div>
+                        </div>
+                        <div class="day-cell"><div class="day-number">25</div></div>
+                        <div class="day-cell"><div class="day-number">26</div></div>
+                        <div class="day-cell"><div class="day-number">27</div></div>
+                        <div class="day-cell"><div class="day-number">28</div></div>
+                        <div class="day-cell"><div class="day-number">29</div></div>
+                        <div class="day-cell"><div class="day-number">30</div></div>
+                        <div class="day-cell"><div class="day-number">31</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- パターンF: 最小限（背景色のみ） -->
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <div class="pattern-title">パターンF: 最小限</div>
+                    <div class="pattern-description">
+                        タスクがある日は背景色を変更<br>
+                        ・超シンプル<br>
+                        ・情報量は最小
+                    </div>
+                </div>
+                <div class="phone-frame pattern-f">
+                    <div class="header">
+                        <div class="month-nav">
+                            <button class="nav-btn">◀</button>
+                            <div class="month-title">2025年10月</div>
+                            <button class="nav-btn">▶</button>
+                        </div>
+                    </div>
+                    <div class="weekdays">
+                        <div class="weekday sunday">日</div>
+                        <div class="weekday">月</div>
+                        <div class="weekday">火</div>
+                        <div class="weekday">水</div>
+                        <div class="weekday">木</div>
+                        <div class="weekday">金</div>
+                        <div class="weekday saturday">土</div>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="day-cell other-month"><div class="day-number">29</div></div>
+                        <div class="day-cell other-month"><div class="day-number">30</div></div>
+                        <div class="day-cell has-high-priority"><div class="day-number">1</div></div>
+                        <div class="day-cell has-tasks"><div class="day-number">2</div></div>
+                        <div class="day-cell"><div class="day-number">3</div></div>
+                        <div class="day-cell has-tasks"><div class="day-number">4</div></div>
+                        <div class="day-cell saturday"><div class="day-number">5</div></div>
+                        <div class="day-cell sunday has-tasks"><div class="day-number">6</div></div>
+                        <div class="day-cell has-tasks"><div class="day-number">7</div></div>
+                        <div class="day-cell"><div class="day-number">8</div></div>
+                        <div class="day-cell"><div class="day-number">9</div></div>
+                        <div class="day-cell"><div class="day-number">10</div></div>
+                        <div class="day-cell"><div class="day-number">11</div></div>
+                        <div class="day-cell"><div class="day-number">12</div></div>
+                        <div class="day-cell"><div class="day-number">13</div></div>
+                        <div class="day-cell"><div class="day-number">14</div></div>
+                        <div class="day-cell"><div class="day-number">15</div></div>
+                        <div class="day-cell"><div class="day-number">16</div></div>
+                        <div class="day-cell"><div class="day-number">17</div></div>
+                        <div class="day-cell"><div class="day-number">18</div></div>
+                        <div class="day-cell"><div class="day-number">19</div></div>
+                        <div class="day-cell"><div class="day-number">20</div></div>
+                        <div class="day-cell"><div class="day-number">21</div></div>
+                        <div class="day-cell"><div class="day-number">22</div></div>
+                        <div class="day-cell"><div class="day-number">23</div></div>
+                        <div class="day-cell today has-high-priority"><div class="day-number">24</div></div>
+                        <div class="day-cell"><div class="day-number">25</div></div>
+                        <div class="day-cell"><div class="day-number">26</div></div>
+                        <div class="day-cell"><div class="day-number">27</div></div>
+                        <div class="day-cell"><div class="day-number">28</div></div>
+                        <div class="day-cell"><div class="day-number">29</div></div>
+                        <div class="day-cell"><div class="day-number">30</div></div>
+                        <div class="day-cell"><div class="day-number">31</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="background: white; padding: 16px; border-top: 8px solid #f5f5f5;">
+            <h2 style="font-size: 16px; margin-bottom: 12px;">📝 まとめ</h2>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #e5e5e5;">
+                        <th style="text-align: left; padding: 6px 4px; font-size: 12px;">パターン</th>
+                        <th style="text-align: left; padding: 6px 4px; font-size: 12px;">メリット</th>
+                        <th style="text-align: left; padding: 6px 4px; font-size: 12px;">デメリット</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 6px 4px; font-weight: 600; font-size: 11px;">A<br><span style="font-size: 9px; color: #666;">推奨</span></td>
+                        <td style="padding: 6px 4px; font-size: 11px;">タスク名わかる</td>
+                        <td style="padding: 6px 4px; font-size: 11px;">文字小さい</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 6px 4px; font-weight: 600; font-size: 11px;">B</td>
+                        <td style="padding: 6px 4px; font-size: 11px;">見やすい</td>
+                        <td style="padding: 6px 4px; font-size: 11px;">やや派手</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 6px 4px; font-weight: 600; font-size: 11px;">C</td>
+                        <td style="padding: 6px 4px; font-size: 11px;">シンプル</td>
+                        <td style="padding: 6px 4px; font-size: 11px;">名前不明</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 6px 4px; font-weight: 600; font-size: 11px;">D</td>
+                        <td style="padding: 6px 4px; font-size: 11px;">コンパクト</td>
+                        <td style="padding: 6px 4px; font-size: 11px;">名前不明</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 6px 4px; font-weight: 600; font-size: 11px;">E</td>
+                        <td style="padding: 6px 4px; font-size: 11px;">最シンプル</td>
+                        <td style="padding: 6px 4px; font-size: 11px;">情報少ない</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 4px; font-weight: 600; font-size: 11px;">F</td>
+                        <td style="padding: 6px 4px; font-size: 11px;">超シンプル</td>
+                        <td style="padding: 6px 4px; font-size: 11px;">情報最小</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

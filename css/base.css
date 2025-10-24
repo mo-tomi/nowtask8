@@ -1,0 +1,323 @@
+/* リセットCSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 色変数（モノトーン） */
+:root {
+  /* モノトーン */
+  --bg-app: #fafafa;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #f8f8f8;
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+
+  --border-light: #f0f0f0;
+  --border-medium: #e5e5e5;
+  --border-dark: #d0d0d0;
+
+  /* 優先度の色（例外） */
+  --priority-high: #ff4444;
+  --priority-medium: #ffaa00;
+  --priority-low: #4488ff;
+
+  /* ゲージの色 */
+  --gauge-current: #1a1a1a;
+  --gauge-scheduled: #666666;
+  --gauge-elapsed: #d0d0d0;
+  --gauge-free: #ffffff;
+
+  /* その他 */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+  /* サイズ */
+  --max-width: 375px;
+  --header-height: 56px;
+  --quick-input-height: 60px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+}
+
+/* 共通レイアウト */
+.app-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+}
+
+/* ヘッダー */
+.header {
+  height: var(--header-height);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-bottom: 1px solid var(--border-light);
+  background-color: var(--bg-primary);
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+}
+
+.date {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.day {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.current-time {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* メインコンテンツ */
+.main-content {
+  flex: 1;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollable {
+  max-height: calc(100vh - var(--header-height) - 76px - var(--quick-input-height));
+  overflow-y: auto;
+}
+
+/* ボタン共通 */
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:active {
+  opacity: 0.7;
+}
+
+/* アイコンボタン */
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-btn:hover {
+  color: var(--text-primary);
+}
+
+/* セクション */
+section {
+  flex-shrink: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.section-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.add-task-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--text-primary);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.add-task-btn svg {
+  width: 12px;
+  height: 12px;
+  stroke: var(--bg-primary);
+}
+
+.add-task-btn:hover {
+  background: var(--text-secondary);
+}
+
+.filter-btn {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+}
+
+.filter-btn:hover {
+  color: var(--text-primary);
+}
+
+/* 入力フィールド共通 */
+input[type="text"],
+input[type="time"],
+input[type="number"] {
+  font-family: inherit;
+  font-size: 14px;
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  outline: none;
+  -webkit-appearance: none;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+input[type="text"]:focus,
+input[type="time"]:focus,
+input[type="number"]:focus {
+  border-color: var(--text-primary);
+}
+
+input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* チェックボックス（カスタム） */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-dark);
+  border-radius: 50%;
+  cursor: pointer;
+  background-color: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  margin-top: 1px;
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--bg-primary);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* スクロールバー */
+.scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 3px;
+}
+
+.scrollable::-webkit-scrollbar-thumb:hover {
+  background: var(--border-dark);
+}
+
+/* ユーティリティクラス */
+.hidden {
+  display: none !important;
+}
+
+.text-muted {
+  color: var(--text-secondary);
+}
+
+.text-small {
+  font-size: 13px;
+}
+
+.text-tiny {
+  font-size: 10px;
+}

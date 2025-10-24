@@ -1,0 +1,118 @@
+/* 24時間ゲージセクション */
+.gauge-section {
+  padding: 10px var(--spacing-xl) 8px;
+  background: var(--bg-primary);
+  border-bottom: 8px solid var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+/* ドットコンテナ */
+.dots-container {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  margin-bottom: 4px;
+}
+
+/* ドット間の線 */
+.dots-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border-medium);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+/* ドット型タイムライン */
+.dot-gauge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gauge-free);
+  border: 1.5px solid var(--border-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+/* ドットの状態 */
+.dot.current {
+  width: 10px;
+  height: 10px;
+  background: var(--gauge-current);
+  border-color: var(--gauge-current);
+}
+
+.dot.elapsed {
+  background: var(--gauge-elapsed);
+  border-color: var(--gauge-elapsed);
+}
+
+.dot.scheduled {
+  background: var(--gauge-scheduled);
+  border-color: var(--gauge-scheduled);
+}
+
+.dot.free {
+  background: var(--gauge-free);
+  border-color: var(--border-medium);
+}
+
+/* ドットホバー */
+.dot:hover {
+  transform: scale(1.3);
+}
+
+.dot.current:hover {
+  transform: scale(1.15);
+}
+
+/* ゲージラベル */
+.dots-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
+.remaining-compact {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* レスポンシブ対応（小さい画面） */
+@media (max-width: 320px) {
+  .dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .dot.current {
+    width: 9px;
+    height: 9px;
+  }
+
+  .dots-labels {
+    font-size: 9px;
+  }
+
+  .remaining-compact {
+    font-size: 9px;
+  }
+}

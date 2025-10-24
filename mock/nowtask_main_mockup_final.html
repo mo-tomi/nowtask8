@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nowtask - メイン画面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #fafafa;
+            line-height: 1.6;
+        }
+
+        .phone-frame {
+            max-width: 375px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 70px;
+        }
+
+        /* ヘッダー */
+        .header {
+            padding: 12px 20px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .date {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .day {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .current-time {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: none;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .icon-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* 24時間ゲージ（ドット型） */
+        .gauge-section {
+            padding: 10px 20px 8px;
+            background: white;
+            border-bottom: 8px solid #f5f5f5;
+        }
+
+        .dots-container {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            margin-bottom: 4px;
+        }
+
+        .dots-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e5e5;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: white;
+            border: 1.5px solid #e5e5e5;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dot.elapsed {
+            background: #d0d0d0;
+            border-color: #d0d0d0;
+        }
+
+        .dot.scheduled {
+            background: #666;
+            border-color: #666;
+        }
+
+        .dot.current {
+            width: 10px;
+            height: 10px;
+            background: #1a1a1a;
+            border-color: #1a1a1a;
+        }
+
+        .dots-labels {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #999;
+        }
+
+        .remaining-compact {
+            font-size: 10px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        /* タスク一覧 */
+        .tasks-section {
+            padding: 14px 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .add-task-btn {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a1a;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .add-task-btn svg {
+            width: 12px;
+            height: 12px;
+            stroke: white;
+        }
+
+        .filter-btn {
+            font-size: 12px;
+            color: #666;
+            background: none;
+            border: none;
+            padding: 4px 8px;
+        }
+
+        /* タイムライン形式のタスク */
+        .task-group {
+            margin-bottom: 20px;
+        }
+
+        .task-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .task-time {
+            flex-shrink: 0;
+            width: 45px;
+            padding-top: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #999;
+        }
+
+        .task-card {
+            flex: 1;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        .task-main {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .task-checkbox {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d0d0d0;
+            border-radius: 50%;
+            margin-top: 1px;
+        }
+
+        .task-checkbox.completed {
+            background: #1a1a1a;
+            border-color: #1a1a1a;
+            position: relative;
+        }
+
+        .task-checkbox.completed::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .priority-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .priority-high {
+            background: #ff4444;
+        }
+
+        .priority-medium {
+            background: #ffaa00;
+        }
+
+        .priority-low {
+            background: #4488ff;
+        }
+
+        .task-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            line-height: 1.3;
+        }
+
+        .task-name.completed {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .task-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 10px;
+            color: #666;
+            background: #f5f5f5;
+            padding: 2px 7px;
+            border-radius: 3px;
+        }
+
+        .task-menu {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* サブタスク */
+        .subtasks {
+            margin-top: 8px;
+            padding-left: 28px;
+        }
+
+        .subtask-item {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+
+        .subtask-checkbox {
+            flex-shrink: 0;
+            width: 14px;
+            height: 14px;
+            border: 1.5px solid #d0d0d0;
+            border-radius: 50%;
+            margin-top: 2px;
+        }
+
+        .subtask-checkbox.completed {
+            background: #666;
+            border-color: #666;
+            position: relative;
+        }
+
+        .subtask-checkbox.completed::after {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 3px;
+            width: 3px;
+            height: 6px;
+            border: solid white;
+            border-width: 0 1.5px 1.5px 0;
+            transform: rotate(45deg);
+        }
+
+        .subtask-name {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.3;
+        }
+
+        .subtask-name.completed {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .subtask-add {
+            font-size: 12px;
+            color: #999;
+            background: none;
+            border: none;
+            padding: 4px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* メインタスクの空き時間ゲージ */
+        .main-task-gauge {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .gauge-bar {
+            height: 6px;
+            background: #f5f5f5;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                #d0d0d0,
+                #d0d0d0 4px,
+                #e5e5e5 4px,
+                #e5e5e5 8px
+            );
+        }
+
+        .gauge-text {
+            font-size: 10px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* 完了済みタスク */
+        .completed-section {
+            margin-top: 20px;
+        }
+
+        .completed-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .completed-toggle svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .completed-tasks {
+            margin-top: 8px;
+        }
+
+        /* 時刻なしタスク */
+        .no-time-group {
+            margin-top: 24px;
+        }
+
+        .no-time-header {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 10px;
+            padding-left: 4px;
+        }
+
+        .no-time-task {
+            margin-bottom: 10px;
+        }
+
+        /* クイック入力欄（下部固定） */
+        .quick-input {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 375px;
+            margin: 0 auto;
+            background: white;
+            border-top: 1px solid #e5e5e5;
+            padding: 10px 16px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #f8f8f8;
+            border-radius: 20px;
+            padding: 8px 14px;
+        }
+
+        .input-field {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 14px;
+            color: #1a1a1a;
+            outline: none;
+        }
+
+        .input-field::placeholder {
+            color: #999;
+        }
+
+        .time-btn {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+        }
+
+        .time-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        /* スクロール可能エリア */
+        .scrollable {
+            max-height: calc(100vh - 190px);
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <!-- ヘッダー -->
+        <div class="header">
+            <div class="header-left">
+                <div class="date">10月24日</div>
+                <div class="day">金</div>
+            </div>
+            <div class="header-right">
+                <div class="current-time">14:30</div>
+                <button class="icon-btn" title="カレンダー">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                </button>
+                <button class="icon-btn" title="設定">
+                    <svg viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- 24時間ゲージ（ドット型） -->
+        <div class="gauge-section">
+            <div class="dots-container">
+                <div class="dots-line"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot elapsed"></div>
+                <div class="dot current"></div>
+                <div class="dot"></div>
+                <div class="dot scheduled"></div>
+                <div class="dot scheduled"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="dots-labels">
+                <span>0:00</span>
+                <span>6:00</span>
+                <span>12:00</span>
+                <span>18:00</span>
+                <span class="remaining-compact">残り 9.5h</span>
+            </div>
+        </div>
+
+        <!-- タスク一覧 -->
+        <div class="tasks-section scrollable">
+            <!-- 10月24日のタスク -->
+            <div class="section-header">
+                <div class="section-title">10月24日（金）</div>
+                <div class="section-actions">
+                    <button class="add-task-btn" title="タスク追加">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                    </button>
+                    <button class="filter-btn">絞り込み</button>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <!-- サブタスクありタスク -->
+                <div class="task-item">
+                    <div class="task-time">9:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="priority-dot priority-high"></div>
+                                    <div class="task-name">プロジェクト会議</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">仕事</span>
+                                    <span class="tag">重要</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                        
+                        <!-- サブタスク -->
+                        <div class="subtasks">
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox completed"></div>
+                                <div class="subtask-name completed">資料を印刷</div>
+                            </div>
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-name">議事録を作成</div>
+                            </div>
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-name">次回ミーティング日程調整</div>
+                            </div>
+                            <button class="subtask-add">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="6" y1="0" x2="6" y2="12" />
+                                    <line x1="0" y1="6" x2="12" y2="6" />
+                                </svg>
+                                <span>サブタスク追加</span>
+                            </button>
+                        </div>
+                        
+                        <!-- メインタスクの空き時間ゲージ -->
+                        <div class="main-task-gauge">
+                            <div class="gauge-bar">
+                                <div class="gauge-fill" style="width: 75%;"></div>
+                            </div>
+                            <div class="gauge-text">15分 / 60分</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">11:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="priority-dot priority-medium"></div>
+                                    <div class="task-name">クライアントに電話</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">仕事</span>
+                                    <span class="tag">営業</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">13:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-name">ランチミーティング</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">食事</span>
+                                    <span class="tag">チーム</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">14:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="priority-dot priority-high"></div>
+                                    <div class="task-name">資料作成</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">仕事</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                        
+                        <!-- サブタスク -->
+                        <div class="subtasks">
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-name">データ収集</div>
+                            </div>
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-name">グラフ作成</div>
+                            </div>
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-name">文章執筆</div>
+                            </div>
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-name">レビュー依頼</div>
+                            </div>
+                        </div>
+
+                        <div class="main-task-gauge">
+                            <div class="gauge-bar">
+                                <div class="gauge-fill" style="width: 40%;"></div>
+                            </div>
+                            <div class="gauge-text">72分 / 120分</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">16:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="priority-dot priority-low"></div>
+                                    <div class="task-name">メールチェック</div>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">17:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="priority-dot priority-medium"></div>
+                                    <div class="task-name">週報作成</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">仕事</span>
+                                    <span class="tag">定期</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                        
+                        <div class="subtasks">
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-name">今週の成果をまとめる</div>
+                            </div>
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-name">来週の予定を記入</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">18:30</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-name">ジム</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">健康</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">20:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-name">夕食準備</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">家事</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">21:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="priority-dot priority-low"></div>
+                                    <div class="task-name">読書</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">趣味</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 完了済みタスク -->
+            <div class="completed-section">
+                <button class="completed-toggle">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="4,6 8,10 12,6" />
+                    </svg>
+                    <span>完了済み（3件）</span>
+                </button>
+                
+                <div class="completed-tasks">
+                    <div class="task-item">
+                        <div class="task-time">7:00</div>
+                        <div class="task-card">
+                            <div class="task-main">
+                                <div class="task-checkbox completed"></div>
+                                <div class="task-content">
+                                    <div class="task-header">
+                                        <div class="task-name completed">モーニングルーティン</div>
+                                    </div>
+                                    <div class="task-tags">
+                                        <span class="tag">習慣</span>
+                                    </div>
+                                </div>
+                                <div class="task-menu">⋮</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="task-item">
+                        <div class="task-time">8:00</div>
+                        <div class="task-card">
+                            <div class="task-main">
+                                <div class="task-checkbox completed"></div>
+                                <div class="task-content">
+                                    <div class="task-header">
+                                        <div class="task-name completed">朝食準備</div>
+                                    </div>
+                                </div>
+                                <div class="task-menu">⋮</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="task-item">
+                        <div class="task-time">10:00</div>
+                        <div class="task-card">
+                            <div class="task-main">
+                                <div class="task-checkbox completed"></div>
+                                <div class="task-content">
+                                    <div class="task-header">
+                                        <div class="task-name completed">チームミーティング</div>
+                                    </div>
+                                    <div class="task-tags">
+                                        <span class="tag">仕事</span>
+                                    </div>
+                                </div>
+                                <div class="task-menu">⋮</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 時刻なしタスク -->
+            <div class="no-time-group">
+                <div class="no-time-header">時刻未設定</div>
+                
+                <div class="no-time-task">
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-name">買い物リスト作成</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">個人</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="no-time-task">
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="priority-dot priority-medium"></div>
+                                    <div class="task-name">来月の予算計画</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">家計</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="no-time-task">
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-name">本の返却</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">用事</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10月25日のタスク -->
+            <div class="section-header" style="margin-top: 24px;">
+                <div class="section-title">10月25日（土）</div>
+                <button class="add-task-btn" title="タスク追加">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="task-group">
+                <div class="task-item">
+                    <div class="task-time">8:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-name">朝ヨガ</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">健康</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">10:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="priority-dot priority-medium"></div>
+                                    <div class="task-name">スーパーで買い物</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">買い物</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                        
+                        <div class="subtasks">
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-name">野菜・果物</div>
+                            </div>
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-name">日用品</div>
+                            </div>
+                            <div class="subtask-item">
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-name">調味料</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">14:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-name">部屋の掃除</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">家事</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">15:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-name">友人とカフェ</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">プライベート</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">19:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="priority-dot priority-high"></div>
+                                    <div class="task-name">プレゼン資料の最終チェック</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">仕事</span>
+                                    <span class="tag">月曜発表</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10月26日のタスク -->
+            <div class="section-header" style="margin-top: 24px;">
+                <div class="section-title">10月26日（日）</div>
+                <button class="add-task-btn" title="タスク追加">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="task-group">
+                <div class="task-item">
+                    <div class="task-time">9:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-name">散歩</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">健康</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">11:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="priority-dot priority-low"></div>
+                                    <div class="task-name">洗濯</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">家事</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">16:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-name">家族とビデオ通話</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">家族</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-time">18:00</div>
+                    <div class="task-card">
+                        <div class="task-main">
+                            <div class="task-checkbox"></div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-name">来週の予定確認</div>
+                                </div>
+                                <div class="task-tags">
+                                    <span class="tag">計画</span>
+                                </div>
+                            </div>
+                            <div class="task-menu">⋮</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- クイック入力欄 -->
+        <div class="quick-input">
+            <div class="input-wrapper">
+                <input type="text" class="input-field" placeholder="タスクを追加">
+            </div>
+            <button class="time-btn" title="時間設定">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</body>
+</html>
