@@ -1,0 +1,273 @@
+/* 統計・分析画面 */
+.stats-section {
+  display: none;
+  padding: 0;
+  overflow-y: auto;
+}
+
+/* 円形プログレスバー（24時間ゲージV3） */
+.circular-gauge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+  background: var(--bg-primary);
+}
+
+.circular-gauge {
+  position: relative;
+  width: 240px;
+  height: 240px;
+}
+
+.circular-gauge svg {
+  transform: rotate(-90deg);
+}
+
+.gauge-circle-bg {
+  fill: none;
+  stroke: var(--border-light);
+  stroke-width: 16;
+}
+
+.gauge-circle-elapsed {
+  fill: none;
+  stroke: var(--border-medium);
+  stroke-width: 16;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.gauge-circle-scheduled {
+  fill: none;
+  stroke: var(--text-primary);
+  stroke-width: 16;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.gauge-center-info {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.gauge-current-time {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.gauge-elapsed-time {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.gauge-remaining-time {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.gauge-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.gauge-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.gauge-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.gauge-legend-dot.elapsed {
+  background: var(--border-medium);
+}
+
+.gauge-legend-dot.scheduled {
+  background: var(--text-primary);
+}
+
+.gauge-legend-dot.free {
+  background: var(--border-light);
+}
+
+/* 統計データ */
+.stats-data-container {
+  padding: 16px;
+}
+
+.stats-card {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.stats-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.stats-card-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stats-card-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stats-grid-item {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.stats-grid-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.stats-grid-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* タグ分析 */
+.tag-analysis-container {
+  padding: 16px;
+  padding-top: 0;
+}
+
+.tag-analysis-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.tag-item {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.tag-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tag-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tag-item-time {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.tag-item-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--border-light);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tag-item-bar-fill {
+  height: 100%;
+  background: var(--text-primary);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.tag-item-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* 期間選択 */
+.period-selector {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.period-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.period-btn:hover {
+  background: var(--bg-secondary);
+}
+
+.period-btn.active {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-color: var(--text-primary);
+}
+
+/* 空状態 */
+.stats-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.stats-empty-icon {
+  font-size: 48px;
+  color: var(--border-medium);
+  margin-bottom: 16px;
+}
+
+.stats-empty-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

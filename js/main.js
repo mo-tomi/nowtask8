@@ -8,6 +8,9 @@ const App = {
     TaskManager.init();
     TaskEditor.init();
     Calendar.init();
+    RoutineManager.init();
+    ShiftManager.init();
+    Stats.init();
     Settings.init();
 
     this.setupEventListeners();
@@ -54,18 +57,33 @@ const App = {
   toggleView() {
     const taskSection = document.getElementById('taskSection');
     const calendarSection = document.getElementById('calendarSection');
+    const statsSection = document.getElementById('statsSection');
 
     if (this.currentView === 'tasks') {
       this.currentView = 'calendar';
       taskSection.style.display = 'none';
       calendarSection.style.display = 'block';
+      statsSection.style.display = 'none';
       console.log('カレンダー表示に切り替えました');
     } else {
       this.currentView = 'tasks';
       taskSection.style.display = 'block';
       calendarSection.style.display = 'none';
+      statsSection.style.display = 'none';
       console.log('タスク一覧表示に切り替えました');
     }
+  },
+
+  showStatsView() {
+    const taskSection = document.getElementById('taskSection');
+    const calendarSection = document.getElementById('calendarSection');
+    const statsSection = document.getElementById('statsSection');
+
+    this.currentView = 'stats';
+    taskSection.style.display = 'none';
+    calendarSection.style.display = 'none';
+    statsSection.style.display = 'block';
+    console.log('統計表示に切り替えました');
   }
 };
 

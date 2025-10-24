@@ -1,5 +1,11 @@
 const TaskManager = {
   tasks: [],
+  filters: {
+    search: '',
+    priorities: [],
+    tags: [],
+    statuses: ['incomplete']
+  },
 
   draggedElement: null,
   draggedTaskId: null,
@@ -12,10 +18,47 @@ const TaskManager = {
 
   setupEventListeners() {
     const completedToggle = document.getElementById('completedToggle');
+    const filterBtn = document.getElementById('filterBtn');
+    const filterCloseBtn = document.getElementById('filterCloseBtn');
+    const filterModal = document.getElementById('filterModal');
+    const applyFilterBtn = document.getElementById('applyFilterBtn');
+    const clearFilterBtn = document.getElementById('clearFilterBtn');
 
     if (completedToggle) {
       completedToggle.addEventListener('click', () => {
         this.toggleCompletedTasks();
+      });
+    }
+
+    if (filterBtn) {
+      filterBtn.addEventListener('click', () => {
+        this.openFilterModal();
+      });
+    }
+
+    if (filterCloseBtn) {
+      filterCloseBtn.addEventListener('click', () => {
+        this.closeFilterModal();
+      });
+    }
+
+    if (filterModal) {
+      filterModal.addEventListener('click', (e) => {
+        if (e.target === filterModal) {
+          this.closeFilterModal();
+        }
+      });
+    }
+
+    if (applyFilterBtn) {
+      applyFilterBtn.addEventListener('click', () => {
+        this.applyFilters();
+      });
+    }
+
+    if (clearFilterBtn) {
+      clearFilterBtn.addEventListener('click', () => {
+        this.clearFilters();
       });
     }
 
@@ -186,10 +229,13 @@ const TaskManager = {
   getTodayTasks() {
     const today = Gauge.currentDate.toDateString();
     return this.tasks.filter(task => {
-      if (task.startTime) {
-        return new Date(task.startTime).toDateString() === today;
-      }
-      return new Date(task.createdAt).toDateString() === today;
+      const isToday = task.startTime
+        ? new Date(task.startTime).toDateString() === today
+        : new Date(task.createdAt).toDateString() === today;
+
+      if (!isToday) return false;
+
+      return this.filterTask(task);
     });
   },
 
@@ -334,5 +380,151 @@ const TaskManager = {
 
     completedTasks.style.display = isVisible ? 'none' : 'block';
     toggle.classList.toggle('active', !isVisible);
+  },
+
+  openFilterModal() {
+    const modal = document.getElementById('filterModal');
+    if (!modal) return;
+
+    this.populateTagFilters();
+    this.populateCurrentFilters();
+
+    modal.style.display = 'flex';
+  },
+
+  closeFilterModal() {
+    const modal = document.getElementById('filterModal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  },
+
+  populateTagFilters() {
+    const tagSet = new Set();
+    this.tasks.forEach(task => {
+      if (task.tags && task.tags.length > 0) {
+        task.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+
+    const tagArray = Array.from(tagSet).sort();
+    const tagFilterList = document.getElementById('tagFilterList');
+    if (!tagFilterList) return;
+
+    if (tagArray.length === 0) {
+      tagFilterList.innerHTML = '<div class="empty-state-text">タグがありません</div>';
+      return;
+    }
+
+    tagFilterList.innerHTML = tagArray.map(tag => `
+      <label class="filter-checkbox">
+        <input type="checkbox" value="${this.escapeHtml(tag)}" class="tag-filter"> ${this.escapeHtml(tag)}
+      </label>
+    `).join('');
+  },
+
+  populateCurrentFilters() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      searchInput.value = this.filters.search;
+    }
+
+    const priorityFilters = document.querySelectorAll('.priority-filter');
+    priorityFilters.forEach(checkbox => {
+      checkbox.checked = this.filters.priorities.includes(checkbox.value);
+    });
+
+    const tagFilters = document.querySelectorAll('.tag-filter');
+    tagFilters.forEach(checkbox => {
+      checkbox.checked = this.filters.tags.includes(checkbox.value);
+    });
+
+    const statusFilters = document.querySelectorAll('.status-filter');
+    statusFilters.forEach(checkbox => {
+      checkbox.checked = this.filters.statuses.includes(checkbox.value);
+    });
+  },
+
+  applyFilters() {
+    const searchInput = document.getElementById('searchInput');
+    this.filters.search = searchInput ? searchInput.value.trim() : '';
+
+    this.filters.priorities = [];
+    const priorityFilters = document.querySelectorAll('.priority-filter:checked');
+    priorityFilters.forEach(checkbox => {
+      this.filters.priorities.push(checkbox.value);
+    });
+
+    this.filters.tags = [];
+    const tagFilters = document.querySelectorAll('.tag-filter:checked');
+    tagFilters.forEach(checkbox => {
+      this.filters.tags.push(checkbox.value);
+    });
+
+    this.filters.statuses = [];
+    const statusFilters = document.querySelectorAll('.status-filter:checked');
+    statusFilters.forEach(checkbox => {
+      this.filters.statuses.push(checkbox.value);
+    });
+
+    this.closeFilterModal();
+    this.renderTasks();
+
+    console.log('フィルターを適用しました:', this.filters);
+  },
+
+  clearFilters() {
+    this.filters = {
+      search: '',
+      priorities: [],
+      tags: [],
+      statuses: ['incomplete']
+    };
+
+    this.populateCurrentFilters();
+    this.renderTasks();
+
+    console.log('フィルターをクリアしました');
+  },
+
+  filterTask(task) {
+    if (this.filters.search) {
+      const searchLower = this.filters.search.toLowerCase();
+      if (!task.name.toLowerCase().includes(searchLower)) {
+        return false;
+      }
+    }
+
+    if (this.filters.priorities.length > 0) {
+      const taskPriority = task.priority || 'none';
+      if (!this.filters.priorities.includes(taskPriority)) {
+        return false;
+      }
+    }
+
+    if (this.filters.tags.length > 0) {
+      if (!task.tags || task.tags.length === 0) {
+        return false;
+      }
+      const hasMatchingTag = task.tags.some(tag => this.filters.tags.includes(tag));
+      if (!hasMatchingTag) {
+        return false;
+      }
+    }
+
+    if (this.filters.statuses.length > 0) {
+      const taskStatus = task.completed ? 'completed' : 'incomplete';
+      if (!this.filters.statuses.includes(taskStatus)) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 };
