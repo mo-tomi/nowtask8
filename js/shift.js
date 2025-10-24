@@ -4,6 +4,11 @@ const ShiftManager = {
 
   init() {
     this.shifts = Storage.loadShifts();
+
+    if (!Array.isArray(this.shifts)) {
+      this.shifts = [];
+    }
+
     this.setupEventListeners();
   },
 

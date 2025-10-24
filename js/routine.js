@@ -13,6 +13,10 @@ const RoutineManager = {
   init() {
     this.routines = Storage.loadRoutines();
 
+    if (!Array.isArray(this.routines)) {
+      this.routines = [];
+    }
+
     if (this.routines.length === 0) {
       this.initializeDefaultRoutines();
     }
