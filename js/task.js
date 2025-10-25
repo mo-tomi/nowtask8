@@ -523,11 +523,11 @@ const TaskManager = {
   },
 
   showSubtaskQuickInput(taskId) {
-    const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
-    if (!taskCard) return;
+    const taskItem = document.querySelector(`.task-item[data-task-id="${taskId}"]`);
+    if (!taskItem) return;
 
-    const addBtn = taskCard.querySelector('.add-subtask-inline-btn');
-    const quickInput = taskCard.querySelector('.subtask-quick-input');
+    const addBtn = taskItem.querySelector('.add-subtask-inline-btn');
+    const quickInput = taskItem.querySelector('.subtask-quick-input');
 
     if (addBtn) addBtn.style.display = 'none';
     if (quickInput) {
@@ -539,10 +539,10 @@ const TaskManager = {
 
   hideSubtaskQuickInput(container) {
     const taskId = container.dataset.taskId;
-    const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
-    if (!taskCard) return;
+    const taskItem = document.querySelector(`.task-item[data-task-id="${taskId}"]`);
+    if (!taskItem) return;
 
-    const addBtn = taskCard.querySelector('.add-subtask-inline-btn');
+    const addBtn = taskItem.querySelector('.add-subtask-inline-btn');
     const input = container.querySelector('.subtask-quick-input-field');
 
     if (container) container.style.display = 'none';
