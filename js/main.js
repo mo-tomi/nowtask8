@@ -7,6 +7,7 @@ const App = {
     Gauge.init();
     TaskManager.init();
     TaskEditor.init();
+    SubtaskDetail.init();
     Calendar.init();
     RoutineManager.init();
     ShiftManager.init();

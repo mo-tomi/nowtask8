@@ -401,6 +401,12 @@
   font-size: 13px;
   color: var(--text-secondary);
   line-height: 1.3;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.subtask-name:hover {
+  color: var(--text-primary);
 }
 
 .subtask-name.completed {
@@ -619,6 +625,10 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
+}
+
+.modal-content.modal-small {
+  max-width: 400px;
 }
 
 .modal-header {

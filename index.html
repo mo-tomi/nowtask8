@@ -502,6 +502,37 @@
     </div>
   </div>
 
+  <!-- サブタスク詳細モーダル -->
+  <div class="modal-overlay" id="subtaskDetailModal" style="display: none;">
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h2 class="modal-title">サブタスク詳細</h2>
+        <button class="modal-close-btn" id="subtaskDetailCloseBtn">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="subtaskDetailForm">
+          <!-- サブタスク名 -->
+          <div class="form-group">
+            <label class="form-label">サブタスク名</label>
+            <input type="text" class="form-input" id="editSubtaskName" placeholder="サブタスク名を入力" required>
+          </div>
+
+          <!-- 所要時間 -->
+          <div class="form-group">
+            <label class="form-label">所要時間（分）</label>
+            <input type="number" class="form-input" id="editSubtaskDuration" placeholder="例: 30" min="0">
+          </div>
+
+          <!-- ボタン -->
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="deleteSubtaskBtn">削除</button>
+            <button type="submit" class="btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- 検索・絞り込みモーダル -->
   <div class="modal-overlay" id="filterModal" style="display: none;">
     <div class="modal-content">
@@ -638,6 +669,7 @@
   <script src="js/gauge.js"></script>
   <script src="js/task.js"></script>
   <script src="js/task-edit.js"></script>
+  <script src="js/subtask-detail.js"></script>
   <script src="js/routine.js"></script>
   <script src="js/shift.js"></script>
   <script src="js/calendar.js"></script>

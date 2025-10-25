@@ -496,7 +496,7 @@ const TaskManager = {
           return `
             <div class="subtask-item">
               <div class="subtask-checkbox ${completedClass}" data-task-id="${taskId}" data-subtask-index="${index}"></div>
-              <div class="subtask-name ${completedClass}">${this.escapeHtml(subtask.name)}</div>
+              <div class="subtask-name ${completedClass}" data-task-id="${taskId}" data-subtask-index="${index}">${this.escapeHtml(subtask.name)}</div>
               ${durationText}
             </div>
           `;
@@ -616,9 +616,20 @@ const TaskManager = {
     const subtaskCheckboxes = document.querySelectorAll('.subtask-checkbox');
     subtaskCheckboxes.forEach(checkbox => {
       checkbox.addEventListener('click', (e) => {
+        e.stopPropagation();
         const taskId = e.currentTarget.dataset.taskId;
         const subtaskIndex = parseInt(e.currentTarget.dataset.subtaskIndex);
         this.toggleSubtaskComplete(taskId, subtaskIndex);
+      });
+    });
+
+    // サブタスク名のクリック
+    const subtaskNames = document.querySelectorAll('.subtask-name');
+    subtaskNames.forEach(nameEl => {
+      nameEl.addEventListener('click', (e) => {
+        const taskId = e.currentTarget.dataset.taskId;
+        const subtaskIndex = parseInt(e.currentTarget.dataset.subtaskIndex);
+        this.showSubtaskDetail(taskId, subtaskIndex);
       });
     });
   },
@@ -676,6 +687,12 @@ const TaskManager = {
     this.renderTasks();
 
     console.log('サブタスクの完了状態を変更しました:', task.subtasks[subtaskIndex]);
+  },
+
+  showSubtaskDetail(taskId, subtaskIndex) {
+    if (typeof SubtaskDetail !== 'undefined' && SubtaskDetail.openModal) {
+      SubtaskDetail.openModal(taskId, subtaskIndex);
+    }
   },
 
   addSubtaskInline(taskId, subtaskName) {
