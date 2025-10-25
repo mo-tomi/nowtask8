@@ -88,12 +88,19 @@ const TaskEditor = {
   },
 
   openModal(taskId) {
-    const task = TaskManager.tasks.find(t => t.id === taskId);
-    if (!task) return;
-
     this.currentTaskId = taskId;
-    this.currentTask = task;
-    this.populateForm(task);
+
+    if (taskId) {
+      // 既存タスクの編集
+      const task = TaskManager.tasks.find(t => t.id === taskId);
+      if (!task) return;
+      this.currentTask = task;
+      this.populateForm(task);
+    } else {
+      // 新規タスクの追加
+      this.currentTask = null;
+      this.clearForm();
+    }
 
     const modal = document.getElementById('taskEditModal');
     if (modal) {
@@ -149,6 +156,49 @@ const TaskEditor = {
 
     // サブタスク
     this.renderSubtasks(task.subtasks || []);
+  },
+
+  clearForm() {
+    // タスク名
+    const taskNameInput = document.getElementById('editTaskName');
+    if (taskNameInput) {
+      taskNameInput.value = '';
+    }
+
+    // 開始時刻
+    const startTimeInput = document.getElementById('editStartTime');
+    if (startTimeInput) {
+      startTimeInput.value = '';
+    }
+
+    // 終了時刻
+    const endTimeInput = document.getElementById('editEndTime');
+    if (endTimeInput) {
+      endTimeInput.value = '';
+    }
+
+    // 所要時間
+    const durationInput = document.getElementById('editDuration');
+    if (durationInput) {
+      durationInput.value = '';
+    }
+
+    // 優先度
+    const priorityBtns = document.querySelectorAll('.priority-btn');
+    priorityBtns.forEach(btn => {
+      btn.classList.remove('active');
+    });
+    // デフォルトで「なし」を選択
+    const noneBtn = document.querySelector('.priority-btn[data-priority=""]');
+    if (noneBtn) {
+      noneBtn.classList.add('active');
+    }
+
+    // タグ
+    this.renderTags([]);
+
+    // サブタスク
+    this.renderSubtasks([]);
   },
 
   formatDateTimeLocal(isoString) {
@@ -302,38 +352,70 @@ const TaskEditor = {
       return;
     }
 
-    const task = TaskManager.tasks.find(t => t.id === this.currentTaskId);
-    if (!task) return;
+    if (this.currentTaskId) {
+      // 既存タスクの編集
+      const task = TaskManager.tasks.find(t => t.id === this.currentTaskId);
+      if (!task) return;
 
-    // タスク名
-    task.name = taskNameInput.value.trim();
+      // タスク名
+      task.name = taskNameInput.value.trim();
 
-    // 時間設定
-    task.startTime = startTimeInput.value ? new Date(startTimeInput.value).toISOString() : null;
-    task.endTime = endTimeInput.value ? new Date(endTimeInput.value).toISOString() : null;
-    task.duration = durationInput.value ? parseInt(durationInput.value) : null;
+      // 時間設定
+      task.startTime = startTimeInput.value ? new Date(startTimeInput.value).toISOString() : null;
+      task.endTime = endTimeInput.value ? new Date(endTimeInput.value).toISOString() : null;
+      task.duration = durationInput.value ? parseInt(durationInput.value) : null;
 
-    // 優先度
-    const activePriorityBtn = document.querySelector('.priority-btn.active');
-    task.priority = activePriorityBtn ? activePriorityBtn.dataset.priority : null;
+      // 優先度
+      const activePriorityBtn = document.querySelector('.priority-btn.active');
+      task.priority = activePriorityBtn ? activePriorityBtn.dataset.priority : null;
 
-    // タグ
-    task.tags = this.currentTask.tags;
+      // タグ
+      task.tags = this.currentTask.tags;
 
-    // サブタスク（空のものは削除）
-    task.subtasks = this.currentTask.subtasks.filter(s => s.name.trim());
+      // サブタスク（空のものは削除）
+      task.subtasks = this.currentTask.subtasks.filter(s => s.name.trim());
 
-    // 更新日時
-    task.updatedAt = new Date().toISOString();
+      // 更新日時
+      task.updatedAt = new Date().toISOString();
+
+      console.log('タスクを更新しました:', task);
+    } else {
+      // 新規タスクの追加
+      const now = new Date().toISOString();
+      const taskId = 'task_' + Date.now();
+
+      const newTask = {
+        id: taskId,
+        name: taskNameInput.value.trim(),
+        startTime: startTimeInput.value ? new Date(startTimeInput.value).toISOString() : null,
+        endTime: endTimeInput.value ? new Date(endTimeInput.value).toISOString() : null,
+        duration: durationInput.value ? parseInt(durationInput.value) : null,
+        priority: null,
+        tags: this.currentTask ? this.currentTask.tags : [],
+        completed: false,
+        completedAt: null,
+        createdAt: now,
+        updatedAt: now,
+        subtasks: this.currentTask ? this.currentTask.subtasks.filter(s => s.name.trim()) : []
+      };
+
+      // 優先度
+      const activePriorityBtn = document.querySelector('.priority-btn.active');
+      newTask.priority = activePriorityBtn ? activePriorityBtn.dataset.priority : null;
+
+      TaskManager.tasks.push(newTask);
+      console.log('タスクを追加しました:', newTask);
+    }
 
     // 保存
     Storage.saveTasks(TaskManager.tasks);
     TaskManager.renderTasks();
     Gauge.updateGauge();
-    if (window.Calendar) Calendar.renderCalendar();
+    if (typeof Calendar !== 'undefined' && Calendar.renderCalendar) {
+      Calendar.renderCalendar();
+    }
 
     this.closeModal();
-    console.log('タスクを更新しました:', task);
   },
 
   escapeHtml(text) {
