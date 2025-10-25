@@ -633,6 +633,17 @@ const TaskManager = {
       quickInput.style.display = 'flex';
       const input = quickInput.querySelector('.subtask-quick-input-field');
       if (input) input.focus();
+
+      // 外側をタップしたらキャンセル（スマホ対応）
+      setTimeout(() => {
+        const handleOutsideClick = (e) => {
+          if (!quickInput.contains(e.target)) {
+            this.hideSubtaskQuickInput(quickInput);
+            document.removeEventListener('click', handleOutsideClick);
+          }
+        };
+        document.addEventListener('click', handleOutsideClick);
+      }, 0);
     }
   },
 
@@ -647,6 +658,9 @@ const TaskManager = {
     if (container) container.style.display = 'none';
     if (addBtn) addBtn.style.display = 'flex';
     if (input) input.value = '';
+
+    // 外側クリックイベントリスナーを削除
+    // （イベントリスナーは自動的に削除されるので追加処理不要）
   },
 
   toggleSubtaskComplete(taskId, subtaskIndex) {
