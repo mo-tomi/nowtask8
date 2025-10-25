@@ -579,7 +579,7 @@ const TaskManager = {
   },
 
   showTaskMenu(taskId) {
-    if (window.TaskEditor) {
+    if (typeof TaskEditor !== 'undefined' && TaskEditor.openModal) {
       TaskEditor.openModal(taskId);
     }
   },
