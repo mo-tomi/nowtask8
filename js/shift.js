@@ -1,9 +1,12 @@
+console.log('shift.js が読み込まれました');
+
 const ShiftManager = {
   presets: [],
   shifts: {},
   currentPresetId: null,
   shiftMode: false,
   selectedDate: null,
+  isApplyingPreset: false,
 
   defaultPresets: [
     { name: '夜勤', startTime: '16:00', endTime: '09:00', breakTime: 60 },
@@ -34,12 +37,13 @@ const ShiftManager = {
   },
 
   initializeDefaultPresets() {
-    this.defaultPresets.forEach(preset => {
+    this.defaultPresets.forEach((preset, index) => {
       const newPreset = this.createPreset(
         preset.name,
         preset.startTime,
         preset.endTime,
-        preset.breakTime
+        preset.breakTime,
+        index
       );
       this.presets.push(newPreset);
     });
@@ -140,6 +144,17 @@ const ShiftManager = {
 
     if (this.shiftMode) {
       this.renderPresetButtons();
+
+      // シフトモードON時に今日の日付を自動選択
+      if (typeof Calendar !== 'undefined') {
+        const today = new Date();
+        Calendar.selectDay(today);
+      }
+    }
+
+    // カレンダーを再描画（表示内容を切り替えるため）
+    if (typeof Calendar !== 'undefined') {
+      Calendar.renderCalendar();
     }
 
     console.log('シフト入力モード:', this.shiftMode);
@@ -149,23 +164,65 @@ const ShiftManager = {
     const container = document.getElementById('shiftPresetButtons');
     if (!container) return;
 
-    container.innerHTML = this.presets.map(preset => `
-      <button class="shift-preset-btn" data-preset-id="${preset.id}">
-        ${this.escapeHtml(preset.name)}
-      </button>
-    `).join('');
+    console.log('renderPresetButtons() called');
+    console.log('this.presets:', this.presets);
+
+    container.innerHTML = this.presets.map(preset => {
+      console.log('プリセット:', preset.name, preset.id);
+      return `
+        <button class="shift-preset-btn ${this.currentPresetId === preset.id ? 'active' : ''}" data-preset-id="${preset.id}">
+          ${this.escapeHtml(preset.name)}
+        </button>
+      `;
+    }).join('');
 
     const buttons = container.querySelectorAll('.shift-preset-btn');
+    console.log('プリセットボタン数:', buttons.length);
     buttons.forEach(button => {
       button.addEventListener('click', () => {
         const presetId = button.dataset.presetId;
-        this.applyPreset(presetId);
+        const presetName = this.presets.find(p => p.id === presetId)?.name;
+        console.log('ボタンクリック:', presetName, presetId);
+        this.selectPreset(presetId);
       });
+    });
+  },
+
+  selectPreset(presetId) {
+    console.log('プリセットを選択:', presetId);
+    console.log('selectedDate:', this.selectedDate);
+    console.log('isApplyingPreset:', this.isApplyingPreset);
+
+    // currentPresetIdを更新
+    this.currentPresetId = presetId;
+
+    // ボタンの選択状態を更新
+    this.updatePresetButtonState();
+
+    // 選択された日付があればシフトを適用（ユーザー操作として）
+    if (this.selectedDate && !this.isApplyingPreset) {
+      console.log('applyPresetを呼び出します');
+      this.applyPreset(presetId, true);
+    } else {
+      console.log('applyPresetをスキップ - 条件不一致');
+    }
+  },
+
+  updatePresetButtonState() {
+    const buttons = document.querySelectorAll('.shift-preset-btn');
+    buttons.forEach(btn => {
+      if (btn.dataset.presetId === this.currentPresetId) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
     });
   },
 
   selectDate(date) {
     this.selectedDate = date;
+    console.log('ShiftManager.selectDate() called:', date);
+    console.log('ShiftManager.selectedDate set to:', this.selectedDate);
 
     const dateLabel = document.getElementById('shiftSelectedDate');
     if (dateLabel) {
@@ -175,7 +232,7 @@ const ShiftManager = {
     }
   },
 
-  applyPreset(presetId) {
+  applyPreset(presetId, autoMoveNext = false) {
     if (!this.selectedDate) {
       alert('日付を選択してください');
       return;
@@ -201,13 +258,16 @@ const ShiftManager = {
       this.createTaskFromShift(this.shifts[dateKey], this.selectedDate);
     }
 
-    if (window.Calendar) {
+    if (typeof Calendar !== 'undefined') {
       Calendar.renderCalendar();
     }
 
-    this.moveToNextDay();
-
     console.log('シフトを登録しました:', preset.name, dateKey);
+
+    // ユーザー操作の場合のみ次の日に自動移動
+    if (autoMoveNext) {
+      this.moveToNextDay();
+    }
   },
 
   moveToNextDay() {
@@ -216,13 +276,15 @@ const ShiftManager = {
     const nextDate = new Date(this.selectedDate);
     nextDate.setDate(nextDate.getDate() + 1);
 
-    if (window.Calendar) {
+    console.log('次の日に移動:', nextDate);
+
+    if (typeof Calendar !== 'undefined') {
       Calendar.selectDay(nextDate);
     }
   },
 
   createTaskFromShift(shift, date) {
-    if (!window.TaskManager) return;
+    if (typeof TaskManager === 'undefined') return;
 
     const existingTask = TaskManager.tasks.find(task => {
       return task.name === shift.name &&
@@ -423,9 +485,9 @@ const ShiftManager = {
     }
   },
 
-  createPreset(name, startTime, endTime, breakTime) {
+  createPreset(name, startTime, endTime, breakTime, index = 0) {
     return {
-      id: `preset_${Date.now()}`,
+      id: `preset_${Date.now()}_${index}`,
       name: name,
       startTime: startTime,
       endTime: endTime,

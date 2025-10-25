@@ -324,28 +324,34 @@
 }
 
 .shift-preset-buttons {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
 }
 
 .shift-preset-btn {
-  flex-shrink: 0;
-  padding: 12px 20px;
+  padding: 12px 8px;
   background: var(--bg-secondary);
   border: 2px solid var(--border-medium);
   border-radius: 8px;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .shift-preset-btn:hover {
   background: var(--border-light);
+  border-color: var(--text-primary);
+}
+
+.shift-preset-btn.active {
+  background: var(--text-primary);
+  color: var(--bg-primary);
   border-color: var(--text-primary);
 }
 

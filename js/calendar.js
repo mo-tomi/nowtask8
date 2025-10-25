@@ -1,9 +1,12 @@
+console.log('calendar.js が読み込まれました');
+
 const Calendar = {
   currentDate: new Date(),
   selectedDate: null,
 
   init() {
     console.log('カレンダーを初期化しました');
+    console.log('ShiftManager exists at init?', typeof ShiftManager !== 'undefined');
     this.renderCalendar();
     this.setupEventListeners();
   },
@@ -129,20 +132,32 @@ const Calendar = {
 
     let shift = null;
     let hasShiftClass = '';
-    if (window.ShiftManager) {
+    let isShiftMode = false;
+    if (typeof ShiftManager !== 'undefined') {
+      isShiftMode = ShiftManager.shiftMode;
       shift = ShiftManager.getShiftForDate(date);
       if (shift) {
         hasShiftClass = 'has-shift';
       }
     }
 
-    return `
-      <div class="day-cell ${classes} ${hasTasksClass} ${hasShiftClass}" data-date="${dateStr}">
-        <div class="day-number">${day}</div>
+    // シフトモード中はシフト名のみ表示、それ以外はタスク数を表示
+    let displayContent = '';
+    if (isShiftMode) {
+      displayContent = shift ? `<div class="shift-label">${this.escapeHtml(shift.name)}</div>` : '';
+    } else {
+      displayContent = `
         ${shift ? `<div class="shift-label">${this.escapeHtml(shift.name)}</div>` : ''}
         <div class="day-tasks">
           ${taskCount > 0 ? `<div class="task-count">${taskCount}</div>` : ''}
         </div>
+      `;
+    }
+
+    return `
+      <div class="day-cell ${classes} ${hasTasksClass} ${hasShiftClass}" data-date="${dateStr}">
+        <div class="day-number">${day}</div>
+        ${displayContent}
       </div>
     `;
   },
@@ -164,6 +179,10 @@ const Calendar = {
     const dateStr = this.formatDateKey(date);
     this.selectedDate = date;
 
+    console.log('Calendar.selectDay() called:', date);
+    console.log('ShiftManager exists?', typeof ShiftManager !== 'undefined');
+    console.log('ShiftManager.shiftMode?', ShiftManager?.shiftMode);
+
     // 選択状態を更新
     const cells = document.querySelectorAll('.day-cell');
     cells.forEach(cell => {
@@ -175,7 +194,8 @@ const Calendar = {
     });
 
     // シフトモード時はShiftManagerに通知
-    if (window.ShiftManager && ShiftManager.shiftMode) {
+    if (typeof ShiftManager !== 'undefined' && ShiftManager.shiftMode) {
+      console.log('Calling ShiftManager.selectDate()...');
       ShiftManager.selectDate(date);
     } else {
       // 選択された日のタスク一覧を表示
@@ -267,10 +287,10 @@ const Calendar = {
   },
 
   getTasksForDate(date) {
-    if (!window.TaskManager || !window.TaskManager.tasks) return [];
+    if (typeof TaskManager === 'undefined' || !TaskManager.tasks) return [];
 
     const dateStr = this.formatDateKey(date);
-    return window.TaskManager.tasks.filter(task => {
+    return TaskManager.tasks.filter(task => {
       if (task.startTime) {
         const taskDate = new Date(task.startTime);
         return this.formatDateKey(taskDate) === dateStr;
@@ -307,5 +327,11 @@ const Calendar = {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
+  },
+
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 };
