@@ -580,30 +580,6 @@
   background: var(--border-medium);
 }
 
-.time-btn {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  background: var(--text-primary);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.time-btn:hover {
-  background: var(--text-secondary);
-}
-
-.time-btn svg {
-  width: 16px;
-  height: 16px;
-  stroke: var(--bg-primary);
-}
-
 /* タスクなし表示 */
 .empty-state {
   text-align: center;

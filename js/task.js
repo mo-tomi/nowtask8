@@ -169,7 +169,6 @@ const TaskManager = {
     input.value = '';
     if (timeSelect) {
       timeSelect.value = '';
-      timeSelect.style.display = 'none';
     }
 
     this.renderTasks();
