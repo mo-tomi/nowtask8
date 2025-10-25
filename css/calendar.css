@@ -425,3 +425,96 @@
   border-color: var(--text-secondary);
   color: var(--text-primary);
 }
+
+/* タスクカード（選択された日） */
+.selected-day-task-list .task-card {
+  padding: 10px 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  margin-bottom: 8px;
+  cursor: move;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.selected-day-task-list .task-card.dragging {
+  opacity: 0.5;
+}
+
+.selected-day-task-list .task-card:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+}
+
+.task-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.task-card-header .task-checkbox {
+  flex-shrink: 0;
+}
+
+.task-card-header .task-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.task-card-header .task-name.completed {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+.task-card .task-time {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-left: 26px;
+}
+
+.task-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+.task-action-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  opacity: 0;
+}
+
+.task-card:hover .task-action-btn {
+  opacity: 1;
+}
+
+.task-action-btn:hover {
+  background: var(--border-medium);
+}
+
+.task-action-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--text-primary);
+}
+
+/* ドラッグオーバー時の日付セル */
+.day-cell.drag-over {
+  background: var(--bg-tertiary);
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}

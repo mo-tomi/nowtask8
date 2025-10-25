@@ -252,6 +252,10 @@ const Calendar = {
     if (container) {
       container.classList.add('with-selected-day');
     }
+
+    // イベントリスナーを設定
+    this.setupTaskEventListeners();
+    this.setupDragAndDrop();
   },
 
   renderTaskForDay(task) {
@@ -259,13 +263,21 @@ const Calendar = {
     const priorityClass = task.priority ? `priority-${task.priority}` : '';
 
     return `
-      <div class="task-card ${priorityClass}" data-task-id="${task.id}">
+      <div class="task-card ${priorityClass}" data-task-id="${task.id}" draggable="true">
         <div class="task-card-header">
           <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
           ${task.priority ? `<span class="priority-dot ${priorityClass}"></span>` : ''}
-          <span class="task-name ${task.completed ? 'completed' : ''}">${task.name}</span>
+          <span class="task-name ${task.completed ? 'completed' : ''}">${this.escapeHtml(task.name)}</span>
         </div>
         ${timeLabel ? `<div class="task-time">${timeLabel}</div>` : ''}
+        <div class="task-actions">
+          <button class="task-action-btn duplicate-btn" title="複製">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     `;
   },
@@ -333,5 +345,158 @@ const Calendar = {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  },
+
+  setupTaskEventListeners() {
+    // チェックボックス
+    const checkboxes = document.querySelectorAll('.selected-day-task-list .task-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        e.stopPropagation();
+        const taskCard = e.target.closest('.task-card');
+        const taskId = taskCard.dataset.taskId;
+        if (taskId && typeof TaskManager !== 'undefined') {
+          TaskManager.toggleTaskComplete(taskId);
+          this.renderCalendar();
+        }
+      });
+    });
+
+    // 複製ボタン
+    const duplicateBtns = document.querySelectorAll('.duplicate-btn');
+    duplicateBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const taskCard = e.target.closest('.task-card');
+        const taskId = taskCard.dataset.taskId;
+        this.duplicateTask(taskId);
+      });
+    });
+  },
+
+  setupDragAndDrop() {
+    const taskCards = document.querySelectorAll('.selected-day-task-list .task-card');
+    const dayCells = document.querySelectorAll('.day-cell');
+
+    taskCards.forEach(card => {
+      card.addEventListener('dragstart', (e) => {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', card.dataset.taskId);
+        card.classList.add('dragging');
+      });
+
+      card.addEventListener('dragend', (e) => {
+        card.classList.remove('dragging');
+      });
+    });
+
+    dayCells.forEach(cell => {
+      cell.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        cell.classList.add('drag-over');
+      });
+
+      cell.addEventListener('dragleave', (e) => {
+        cell.classList.remove('drag-over');
+      });
+
+      cell.addEventListener('drop', (e) => {
+        e.preventDefault();
+        cell.classList.remove('drag-over');
+
+        const taskId = e.dataTransfer.getData('text/plain');
+        const targetDateStr = cell.dataset.date;
+
+        if (taskId && targetDateStr) {
+          this.moveTask(taskId, targetDateStr);
+        }
+      });
+    });
+  },
+
+  moveTask(taskId, targetDateStr) {
+    if (typeof TaskManager === 'undefined' || !TaskManager.tasks) return;
+
+    const task = TaskManager.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const targetDate = new Date(targetDateStr);
+
+    // 時刻がある場合は日付部分のみ変更
+    if (task.startTime) {
+      const oldStart = new Date(task.startTime);
+      const newStart = new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        targetDate.getDate(),
+        oldStart.getHours(),
+        oldStart.getMinutes()
+      );
+      task.startTime = newStart.toISOString();
+
+      if (task.endTime) {
+        const oldEnd = new Date(task.endTime);
+        const newEnd = new Date(
+          targetDate.getFullYear(),
+          targetDate.getMonth(),
+          targetDate.getDate(),
+          oldEnd.getHours(),
+          oldEnd.getMinutes()
+        );
+        task.endTime = newEnd.toISOString();
+      }
+    } else {
+      // 時刻がない場合は新しい日付で作成
+      task.startTime = new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        targetDate.getDate(),
+        9, 0
+      ).toISOString();
+    }
+
+    task.updatedAt = new Date().toISOString();
+
+    Storage.saveTasks(TaskManager.tasks);
+    this.renderCalendar();
+    if (typeof Gauge !== 'undefined') Gauge.updateGauge();
+    if (typeof TaskManager !== 'undefined') TaskManager.renderTasks();
+
+    console.log('タスクを移動しました:', task.name, '→', targetDateStr);
+  },
+
+  duplicateTask(taskId) {
+    if (typeof TaskManager === 'undefined' || !TaskManager.tasks) return;
+
+    const task = TaskManager.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const now = new Date().toISOString();
+    const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+    const newTaskId = `task_${dateStr}_${Date.now()}`;
+
+    const newTask = {
+      ...task,
+      id: newTaskId,
+      name: task.name + ' (コピー)',
+      completed: false,
+      completedAt: null,
+      createdAt: now,
+      updatedAt: now,
+      subtasks: task.subtasks ? JSON.parse(JSON.stringify(task.subtasks)) : []
+    };
+
+    TaskManager.tasks.push(newTask);
+    Storage.saveTasks(TaskManager.tasks);
+
+    this.renderCalendar();
+    if (this.selectedDate) {
+      this.showSelectedDayTasks(this.selectedDate);
+    }
+    if (typeof Gauge !== 'undefined') Gauge.updateGauge();
+    if (typeof TaskManager !== 'undefined') TaskManager.renderTasks();
+
+    console.log('タスクを複製しました:', newTask.name);
   }
 };
