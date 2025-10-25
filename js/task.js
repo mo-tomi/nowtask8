@@ -222,7 +222,7 @@ const TaskManager = {
     const doneTasks = todayTasks.filter(t => t.completed);
 
     taskList.innerHTML = activeTasks.length > 0
-      ? activeTasks.map(task => this.renderTaskCard(task)).join('')
+      ? this.renderTasksWithOverlapDetection(activeTasks)
       : '<div class="empty-state"><div class="empty-state-text">タスクがありません</div></div>';
 
     completedTasks.innerHTML = doneTasks.map(task => this.renderTaskCard(task)).join('');
@@ -233,6 +233,97 @@ const TaskManager = {
     }
 
     this.attachTaskEventListeners();
+  },
+
+  renderTasksWithOverlapDetection(tasks) {
+    const overlapGroups = this.detectOverlaps(tasks);
+    let html = '';
+
+    overlapGroups.forEach(group => {
+      if (group.isOverlap) {
+        html += this.renderOverlapGroup(group.tasks);
+      } else {
+        html += group.tasks.map(task => this.renderTaskCard(task)).join('');
+      }
+    });
+
+    return html;
+  },
+
+  detectOverlaps(tasks) {
+    const tasksWithTime = tasks.filter(t => t.startTime && t.endTime);
+    const tasksWithoutTime = tasks.filter(t => !t.startTime || !t.endTime);
+
+    if (tasksWithTime.length === 0) {
+      return [{ isOverlap: false, tasks: tasks }];
+    }
+
+    const sorted = [...tasksWithTime].sort((a, b) =>
+      new Date(a.startTime) - new Date(b.startTime)
+    );
+
+    const groups = [];
+    const processed = new Set();
+
+    sorted.forEach((task, index) => {
+      if (processed.has(task.id)) return;
+
+      const overlapping = [task];
+      processed.add(task.id);
+
+      for (let i = index + 1; i < sorted.length; i++) {
+        const other = sorted[i];
+        if (processed.has(other.id)) continue;
+
+        if (this.tasksOverlap(task, other) ||
+            overlapping.some(t => this.tasksOverlap(t, other))) {
+          overlapping.push(other);
+          processed.add(other.id);
+        }
+      }
+
+      if (overlapping.length > 1) {
+        groups.push({ isOverlap: true, tasks: overlapping });
+      } else {
+        groups.push({ isOverlap: false, tasks: overlapping });
+      }
+    });
+
+    if (tasksWithoutTime.length > 0) {
+      groups.push({ isOverlap: false, tasks: tasksWithoutTime });
+    }
+
+    return groups;
+  },
+
+  tasksOverlap(task1, task2) {
+    const start1 = new Date(task1.startTime);
+    const end1 = new Date(task1.endTime);
+    const start2 = new Date(task2.startTime);
+    const end2 = new Date(task2.endTime);
+
+    return start1 < end2 && start2 < end1;
+  },
+
+  renderOverlapGroup(tasks) {
+    const count = tasks.length;
+    const taskCards = tasks.map(task => this.renderTaskCard(task)).join('');
+
+    return `
+      <div class="overlap-group">
+        <div class="overlap-warning">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <span>${count}件のタスクが重複しています</span>
+        </div>
+        <div class="overlap-tasks">
+          ${taskCards}
+        </div>
+      </div>
+    `;
   },
 
   getTodayTasks() {
