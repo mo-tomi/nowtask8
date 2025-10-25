@@ -289,9 +289,20 @@ const TaskManager = {
 
     const tasksHtml = this.renderTasksWithOverlapDetection(group.tasks);
 
+    // 日付をISO形式で保存（data属性用）
+    const dateString = dateObj.toISOString();
+
     return `
       <div class="date-group">
-        <div class="date-group-header">${dateLabel}</div>
+        <div class="date-group-header">
+          <span class="date-group-label">${dateLabel}</span>
+          <button class="date-add-task-btn" data-date="${dateString}" title="タスク追加">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
         ${tasksHtml}
       </div>
     `;
@@ -535,6 +546,16 @@ const TaskManager = {
       button.addEventListener('click', (e) => {
         const taskId = e.currentTarget.dataset.taskId;
         this.showTaskMenu(taskId);
+      });
+    });
+
+    // 日付グループの追加ボタン
+    const dateAddBtns = document.querySelectorAll('.date-add-task-btn');
+    dateAddBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const dateString = e.currentTarget.dataset.date;
+        const date = new Date(dateString);
+        this.showTaskMenu(null, date);
       });
     });
 

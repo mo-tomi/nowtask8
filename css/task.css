@@ -15,12 +15,43 @@
 }
 
 .date-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
   padding: 8px 0;
   margin-bottom: 12px;
   border-bottom: 2px solid var(--border-light);
+}
+
+.date-group-label {
+  flex: 1;
+}
+
+.date-add-task-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.date-add-task-btn:hover {
+  background: var(--border-medium);
+}
+
+.date-add-task-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--text-primary);
 }
 
 /* 重複グループ */
