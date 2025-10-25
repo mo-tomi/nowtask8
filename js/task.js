@@ -26,12 +26,19 @@ const TaskManager = {
   },
 
   setupEventListeners() {
+    const addTaskBtn = document.getElementById('addTaskBtn');
     const completedToggle = document.getElementById('completedToggle');
     const filterBtn = document.getElementById('filterBtn');
     const filterCloseBtn = document.getElementById('filterCloseBtn');
     const filterModal = document.getElementById('filterModal');
     const applyFilterBtn = document.getElementById('applyFilterBtn');
     const clearFilterBtn = document.getElementById('clearFilterBtn');
+
+    if (addTaskBtn) {
+      addTaskBtn.addEventListener('click', () => {
+        this.showTaskMenu(null);
+      });
+    }
 
     if (completedToggle) {
       completedToggle.addEventListener('click', () => {
