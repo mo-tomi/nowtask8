@@ -190,6 +190,97 @@
   margin-bottom: 6px;
 }
 
+/* サブタスクインライン追加ボタン */
+.add-subtask-inline-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border-dark);
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: all 0.2s;
+  margin-top: 2px;
+  padding: 0;
+}
+
+.add-subtask-inline-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.add-subtask-inline-btn svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.5;
+}
+
+/* サブタスククイック入力 */
+.subtask-quick-input {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.subtask-quick-input-field {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border-medium);
+  border-radius: 4px;
+  font-size: 13px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.subtask-quick-input-field:focus {
+  border-color: var(--text-primary);
+}
+
+.subtask-quick-save {
+  padding: 6px 12px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.subtask-quick-save:hover {
+  background: var(--text-secondary);
+}
+
+.subtask-quick-cancel {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: none;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.subtask-quick-cancel:hover {
+  background: var(--border-medium);
+  color: var(--text-primary);
+}
+
 .subtask-checkbox {
   flex-shrink: 0;
   width: 14px;

@@ -268,9 +268,7 @@ const TaskManager = {
     const completedClass = task.completed ? 'completed' : '';
     const taskNameClass = task.completed ? 'task-name completed' : 'task-name';
 
-    const subtasksHtml = task.subtasks && task.subtasks.length > 0
-      ? this.renderSubtasks(task.subtasks)
-      : '';
+    const subtasksHtml = this.renderSubtasks(task.subtasks, task.id);
 
     const gaugeHtml = this.renderTaskGauge(task);
 
@@ -326,20 +324,35 @@ const TaskManager = {
     `;
   },
 
-  renderSubtasks(subtasks) {
-    if (!subtasks || subtasks.length === 0) return '';
+  renderSubtasks(subtasks, taskId) {
+    const subtasksHtml = (subtasks && subtasks.length > 0)
+      ? subtasks.map(subtask => {
+          const completedClass = subtask.completed ? 'completed' : '';
+          return `
+            <div class="subtask-item">
+              <div class="subtask-checkbox ${completedClass}"></div>
+              <div class="subtask-name ${completedClass}">${this.escapeHtml(subtask.name)}</div>
+            </div>
+          `;
+        }).join('')
+      : '';
 
-    const subtasksHtml = subtasks.map(subtask => {
-      const completedClass = subtask.completed ? 'completed' : '';
-      return `
-        <div class="subtask-item">
-          <div class="subtask-checkbox ${completedClass}"></div>
-          <div class="subtask-name ${completedClass}">${this.escapeHtml(subtask.name)}</div>
+    return `
+      <div class="subtasks">
+        ${subtasksHtml}
+        <button class="add-subtask-inline-btn" data-task-id="${taskId}" title="サブタスクを追加">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+        <div class="subtask-quick-input" data-task-id="${taskId}" style="display: none;">
+          <input type="text" class="subtask-quick-input-field" placeholder="サブタスク名を入力" />
+          <button class="subtask-quick-save">追加</button>
+          <button class="subtask-quick-cancel">×</button>
         </div>
-      `;
-    }).join('');
-
-    return `<div class="subtasks">${subtasksHtml}</div>`;
+      </div>
+    `;
   },
 
   formatTimeLabel(startTime) {
@@ -371,6 +384,107 @@ const TaskManager = {
         this.showTaskMenu(taskId);
       });
     });
+
+    // サブタスク追加ボタン
+    const addSubtaskBtns = document.querySelectorAll('.add-subtask-inline-btn');
+    addSubtaskBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const taskId = e.currentTarget.dataset.taskId;
+        this.showSubtaskQuickInput(taskId);
+      });
+    });
+
+    // サブタスククイック追加の保存
+    const subtaskSaveBtns = document.querySelectorAll('.subtask-quick-save');
+    subtaskSaveBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const container = e.currentTarget.closest('.subtask-quick-input');
+        const taskId = container.dataset.taskId;
+        const input = container.querySelector('.subtask-quick-input-field');
+        this.addSubtaskInline(taskId, input.value.trim());
+      });
+    });
+
+    // サブタスククイック追加のキャンセル
+    const subtaskCancelBtns = document.querySelectorAll('.subtask-quick-cancel');
+    subtaskCancelBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const container = e.currentTarget.closest('.subtask-quick-input');
+        this.hideSubtaskQuickInput(container);
+      });
+    });
+
+    // サブタスククイック追加のEnterキー
+    const subtaskInputs = document.querySelectorAll('.subtask-quick-input-field');
+    subtaskInputs.forEach(input => {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.stopPropagation();
+          const container = e.currentTarget.closest('.subtask-quick-input');
+          const taskId = container.dataset.taskId;
+          this.addSubtaskInline(taskId, e.target.value.trim());
+        }
+      });
+    });
+  },
+
+  showSubtaskQuickInput(taskId) {
+    const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+    if (!taskCard) return;
+
+    const addBtn = taskCard.querySelector('.add-subtask-inline-btn');
+    const quickInput = taskCard.querySelector('.subtask-quick-input');
+
+    if (addBtn) addBtn.style.display = 'none';
+    if (quickInput) {
+      quickInput.style.display = 'flex';
+      const input = quickInput.querySelector('.subtask-quick-input-field');
+      if (input) input.focus();
+    }
+  },
+
+  hideSubtaskQuickInput(container) {
+    const taskId = container.dataset.taskId;
+    const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+    if (!taskCard) return;
+
+    const addBtn = taskCard.querySelector('.add-subtask-inline-btn');
+    const input = container.querySelector('.subtask-quick-input-field');
+
+    if (container) container.style.display = 'none';
+    if (addBtn) addBtn.style.display = 'flex';
+    if (input) input.value = '';
+  },
+
+  addSubtaskInline(taskId, subtaskName) {
+    if (!subtaskName) return;
+
+    const task = this.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const newSubtask = {
+      id: `subtask_${Date.now()}`,
+      name: subtaskName,
+      completed: false,
+      duration: null,
+      subtasks: []
+    };
+
+    if (!task.subtasks) {
+      task.subtasks = [];
+    }
+
+    task.subtasks.push(newSubtask);
+    task.updatedAt = new Date().toISOString();
+
+    Storage.saveTasks(this.tasks);
+    this.renderTasks();
+    Gauge.updateGauge();
+
+    console.log('サブタスクを追加しました:', subtaskName);
   },
 
   showTaskMenu(taskId) {
