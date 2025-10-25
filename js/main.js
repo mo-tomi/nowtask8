@@ -15,6 +15,7 @@ const App = {
 
     this.setupEventListeners();
     this.applyInitialView();
+    this.checkPastIncompleteTasks();
 
     console.log('初期化が完了しました');
   },
@@ -84,6 +85,43 @@ const App = {
     calendarSection.style.display = 'none';
     statsSection.style.display = 'block';
     console.log('統計表示に切り替えました');
+  },
+
+  checkPastIncompleteTasks() {
+    if (typeof TaskManager === 'undefined' || !TaskManager.tasks) {
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const pastIncompleteTasks = TaskManager.tasks.filter(task => {
+      if (task.completed) return false;
+      if (!task.startTime) return false;
+
+      const taskDate = new Date(task.startTime);
+      taskDate.setHours(0, 0, 0, 0);
+
+      return taskDate < today;
+    });
+
+    if (pastIncompleteTasks.length > 0) {
+      console.log(`過去の未完了タスクが${pastIncompleteTasks.length}件あります`);
+
+      const taskNames = pastIncompleteTasks
+        .slice(0, 5)
+        .map(t => `・${t.name}`)
+        .join('\n');
+
+      const moreText = pastIncompleteTasks.length > 5 ?
+        `\n...他${pastIncompleteTasks.length - 5}件` : '';
+
+      const message = `過去の未完了タスクが${pastIncompleteTasks.length}件あります:\n\n${taskNames}${moreText}\n\nタスク一覧で確認してください。`;
+
+      setTimeout(() => {
+        alert(message);
+      }, 500);
+    }
   }
 };
 

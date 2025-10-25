@@ -321,3 +321,51 @@ input[type="checkbox"]:checked::after {
 .text-tiny {
   font-size: 10px;
 }
+
+/* 除外日設定 */
+.exclude-dates-input {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.exclude-dates-input .form-input {
+  flex: 1;
+}
+
+.exclude-dates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.exclude-date-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.remove-exclude-date-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--border-medium);
+  border-radius: 50%;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.remove-exclude-date-btn:hover {
+  background: var(--text-secondary);
+  color: var(--bg-primary);
+}

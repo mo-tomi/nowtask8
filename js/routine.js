@@ -51,6 +51,7 @@ const RoutineManager = {
     const editForm = document.getElementById('routineEditForm');
     const deleteBtn = document.getElementById('deleteRoutineBtn');
     const patternSelect = document.getElementById('editRoutinePattern');
+    const addExcludeDateBtn = document.getElementById('addExcludeDateBtn');
 
     if (manageBtn) {
       manageBtn.addEventListener('click', () => {
@@ -111,6 +112,12 @@ const RoutineManager = {
         if (weekdayGroup) {
           weekdayGroup.style.display = e.target.value === 'weekly' ? 'block' : 'none';
         }
+      });
+    }
+
+    if (addExcludeDateBtn) {
+      addExcludeDateBtn.addEventListener('click', () => {
+        this.addExcludeDate();
       });
     }
   },
@@ -224,6 +231,75 @@ const RoutineManager = {
     checkboxes.forEach(checkbox => {
       checkbox.checked = routine.repeatDays && routine.repeatDays.includes(parseInt(checkbox.value));
     });
+
+    this.renderExcludeDates(routine.excludeDates || []);
+  },
+
+  renderExcludeDates(excludeDates) {
+    const list = document.getElementById('excludeDatesList');
+    if (!list) return;
+
+    if (excludeDates.length === 0) {
+      list.innerHTML = '';
+      return;
+    }
+
+    list.innerHTML = excludeDates.map(dateStr => `
+      <div class="exclude-date-item">
+        <span>${dateStr}</span>
+        <button type="button" class="remove-exclude-date-btn" data-date="${dateStr}">×</button>
+      </div>
+    `).join('');
+
+    const removeButtons = list.querySelectorAll('.remove-exclude-date-btn');
+    removeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.removeExcludeDate(btn.dataset.date);
+      });
+    });
+  },
+
+  addExcludeDate() {
+    const dateInput = document.getElementById('excludeDateInput');
+    if (!dateInput || !dateInput.value) {
+      alert('日付を選択してください');
+      return;
+    }
+
+    if (!this.currentRoutineId) {
+      alert('ルーティンを保存してから除外日を追加してください');
+      return;
+    }
+
+    const routine = this.routines.find(r => r.id === this.currentRoutineId);
+    if (!routine) return;
+
+    if (!routine.excludeDates) {
+      routine.excludeDates = [];
+    }
+
+    if (routine.excludeDates.includes(dateInput.value)) {
+      alert('この日付は既に追加されています');
+      return;
+    }
+
+    routine.excludeDates.push(dateInput.value);
+    Storage.saveRoutines(this.routines);
+    this.renderExcludeDates(routine.excludeDates);
+    dateInput.value = '';
+    console.log('除外日を追加しました:', dateInput.value);
+  },
+
+  removeExcludeDate(dateStr) {
+    if (!this.currentRoutineId) return;
+
+    const routine = this.routines.find(r => r.id === this.currentRoutineId);
+    if (!routine) return;
+
+    routine.excludeDates = routine.excludeDates.filter(d => d !== dateStr);
+    Storage.saveRoutines(this.routines);
+    this.renderExcludeDates(routine.excludeDates);
+    console.log('除外日を削除しました:', dateStr);
   },
 
   clearRoutineForm() {
@@ -245,6 +321,8 @@ const RoutineManager = {
     checkboxes.forEach(checkbox => {
       checkbox.checked = false;
     });
+
+    this.renderExcludeDates([]);
   },
 
   saveRoutine() {

@@ -135,6 +135,17 @@ const Gauge = {
       if (now.getMinutes() === 0) {
         this.updateGauge();
       }
+
+      // 毎日0時にルーティンタスクを自動生成
+      if (now.getHours() === 0 && now.getMinutes() === 0) {
+        if (typeof RoutineManager !== 'undefined') {
+          console.log('0時になりました。ルーティンタスクを生成します');
+          RoutineManager.generateDailyTasks();
+          if (typeof TaskManager !== 'undefined') {
+            TaskManager.renderTasks();
+          }
+        }
+      }
     }, 60000);
   },
 

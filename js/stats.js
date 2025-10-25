@@ -159,8 +159,22 @@ const Stats = {
       }
     });
 
+    // 期間に応じた平均空き時間を計算
+    let avgFreeHours = 0;
+    if (this.currentPeriod === 'today') {
+      const scheduledHours = totalDuration / 60;
+      avgFreeHours = 24 - scheduledHours;
+    } else if (this.currentPeriod === 'week') {
+      const scheduledHours = totalDuration / 60;
+      avgFreeHours = (24 * 7 - scheduledHours) / 7; // 1日あたりの平均
+    } else if (this.currentPeriod === 'month') {
+      const now = new Date();
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const scheduledHours = totalDuration / 60;
+      avgFreeHours = (24 * daysInMonth - scheduledHours) / daysInMonth; // 1日あたりの平均
+    }
+
     const scheduledHours = totalDuration / 60;
-    const freeHours = 24 - scheduledHours;
     const avgDuration = totalTasks > 0 ? totalDuration / totalTasks / 60 : 0;
     const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
@@ -176,7 +190,7 @@ const Stats = {
     if (completedTasksEl) completedTasksEl.textContent = completedTasks;
     if (incompleteTasksEl) incompleteTasksEl.textContent = incompleteTasks;
     if (scheduledHoursEl) scheduledHoursEl.textContent = `${scheduledHours.toFixed(1)}h`;
-    if (freeHoursEl) freeHoursEl.textContent = `${Math.max(0, freeHours).toFixed(1)}h`;
+    if (freeHoursEl) freeHoursEl.textContent = `${Math.max(0, avgFreeHours).toFixed(1)}h`;
     if (avgDurationEl) avgDurationEl.textContent = `${avgDuration.toFixed(1)}h`;
     if (completionRateEl) completionRateEl.textContent = `${completionRate.toFixed(0)}%`;
   },

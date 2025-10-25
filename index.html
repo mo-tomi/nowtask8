@@ -312,6 +312,17 @@
             </div>
           </div>
 
+          <!-- 除外日設定 -->
+          <div class="form-group">
+            <label class="form-label">除外日設定</label>
+            <div class="exclude-dates-input">
+              <input type="date" class="form-input" id="excludeDateInput">
+              <button type="button" class="btn-secondary" id="addExcludeDateBtn">追加</button>
+            </div>
+            <p class="settings-description">この日はルーティンタスクが生成されません</p>
+            <div class="exclude-dates-list" id="excludeDatesList"></div>
+          </div>
+
           <!-- ボタン -->
           <div class="modal-actions">
             <button type="button" class="btn-secondary" id="deleteRoutineBtn">削除</button>
