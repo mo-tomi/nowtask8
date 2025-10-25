@@ -33,6 +33,7 @@ const App = {
     const viewToggleBtn = document.getElementById('viewToggleBtn');
     const quickInput = document.getElementById('quickInput');
     const timeBtn = document.getElementById('timeBtn');
+    const timeSelect = document.getElementById('timeSelect');
 
     if (viewToggleBtn) {
       viewToggleBtn.addEventListener('click', () => {
@@ -51,8 +52,28 @@ const App = {
 
     if (timeBtn) {
       timeBtn.addEventListener('click', () => {
-        console.log('時間設定ボタンがクリックされました');
+        this.toggleTimeSelect();
       });
+    }
+
+    if (timeSelect) {
+      timeSelect.addEventListener('change', (e) => {
+        if (e.target.value) {
+          console.log('選択された時間:', e.target.value, '分');
+        }
+      });
+    }
+  },
+
+  toggleTimeSelect() {
+    const timeSelect = document.getElementById('timeSelect');
+    if (!timeSelect) return;
+
+    if (timeSelect.style.display === 'none' || !timeSelect.style.display) {
+      timeSelect.style.display = 'block';
+      timeSelect.focus();
+    } else {
+      timeSelect.style.display = 'none';
     }
   },
 

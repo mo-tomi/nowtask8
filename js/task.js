@@ -150,15 +150,27 @@ const TaskManager = {
 
   addTaskFromQuickInput() {
     const input = document.getElementById('quickInput');
+    const timeSelect = document.getElementById('timeSelect');
     const taskName = input.value.trim();
 
     if (!taskName) return;
 
-    const task = this.createTask(taskName);
+    const options = {};
+
+    // 時間が選択されている場合
+    if (timeSelect && timeSelect.value) {
+      options.duration = parseInt(timeSelect.value);
+    }
+
+    const task = this.createTask(taskName, options);
     this.tasks.push(task);
     Storage.saveTasks(this.tasks);
 
     input.value = '';
+    if (timeSelect) {
+      timeSelect.value = '';
+      timeSelect.style.display = 'none';
+    }
 
     this.renderTasks();
     Gauge.updateGauge();

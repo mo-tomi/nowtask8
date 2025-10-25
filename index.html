@@ -225,6 +225,22 @@
     <div class="quick-input" id="quickInputBar">
       <div class="input-wrapper">
         <input type="text" class="input-field" id="quickInput" placeholder="タスクを追加" autocomplete="off">
+        <select class="time-select" id="timeSelect" style="display: none;">
+          <option value="">時間なし</option>
+          <option value="30">30分</option>
+          <option value="60">1時間</option>
+          <option value="90">1時間30分</option>
+          <option value="120">2時間</option>
+          <option value="150">2時間30分</option>
+          <option value="180">3時間</option>
+          <option value="210">3時間30分</option>
+          <option value="240">4時間</option>
+          <option value="270">4時間30分</option>
+          <option value="300">5時間</option>
+          <option value="360">6時間</option>
+          <option value="420">7時間</option>
+          <option value="480">8時間</option>
+        </select>
       </div>
       <button class="time-btn" id="timeBtn" title="時間設定">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
