@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nowtask - 確定デザイン</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #fafafa;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .phone-frame {
+            max-width: 375px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            padding: 24px 20px 20px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .content {
+            padding: 0;
+        }
+
+        .section {
+            padding: 30px 20px;
+            border-bottom: 8px solid #f5f5f5;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-badge {
+            display: inline-block;
+            background: #00c853;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .section-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        /* モック画面 */
+        .mockup-screen {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .mockup-header {
+            padding: 24px 20px 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .mockup-date {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .mockup-day {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .mockup-gauge {
+            padding: 24px 20px;
+        }
+
+        .mockup-stats {
+            padding: 0 20px 24px;
+        }
+
+        /* ドット型 */
+        .dots-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        .dots-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 2px;
+            background: #f0f0f0;
+            z-index: 0;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e5e5e5;
+            position: relative;
+            z-index: 1;
+            transition: all 0.2s;
+        }
+
+        .dot.elapsed {
+            background: #b0b0b0;
+        }
+
+        .dot.scheduled {
+            background: #666;
+            transform: scale(1.3);
+        }
+
+        .dot.current {
+            background: #1a1a1a;
+            transform: scale(1.8);
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.1);
+        }
+
+        .dots-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #999;
+            margin-top: 12px;
+        }
+
+        /* 円形 */
+        .circular-progress {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 0;
+        }
+
+        .circle-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+        }
+
+        .circle-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .circle-stats-inside {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 100%;
+        }
+
+        .circle-main-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .circle-stat-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .circle-stat-item {
+            text-align: center;
+        }
+
+        .circle-stat-value-small {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .circle-stat-label-small {
+            font-size: 9px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* 統計表示 */
+        .stats-simple {
+            display: flex;
+            gap: 12px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: #f8f8f8;
+            padding: 14px 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .note-box {
+            background: #f0f9ff;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 3px solid #0284c7;
+        }
+
+        .note-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 6px;
+        }
+
+        .note-text {
+            font-size: 12px;
+            color: #0369a1;
+            line-height: 1.5;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .comparison-item {
+            text-align: center;
+        }
+
+        .comparison-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .comparison-preview {
+            background: #fafafa;
+            border-radius: 12px;
+            padding: 16px;
+            border: 2px solid #e5e5e5;
+        }
+
+        .mini-dots {
+            display: flex;
+            justify-content: space-between;
+            gap: 2px;
+            margin-bottom: 8px;
+        }
+
+        .mini-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #e5e5e5;
+        }
+
+        .mini-dot.elapsed {
+            background: #b0b0b0;
+        }
+
+        .mini-dot.scheduled {
+            background: #666;
+        }
+
+        .mini-dot.current {
+            background: #1a1a1a;
+            transform: scale(1.5);
+        }
+
+        .mini-circle {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+        }
+
+        .checkmark {
+            color: #00c853;
+            font-size: 20px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="header">
+            <div class="header-title">確定デザイン</div>
+            <div class="header-subtitle">最終版 - 2025/10/24</div>
+        </div>
+
+        <div class="content">
+
+            <!-- ドット型確定版 -->
+            <div class="section">
+                <span class="section-badge">✓ 確定</span>
+                <div class="section-title">ドット型タイムライン（V1標準）</div>
+                <div class="section-description">
+                    24個のドットで24時間を表現。現在時刻は大きな黒ドット、予定は濃いグレー、経過は薄いグレーで表現。
+                </div>
+
+                <div class="mockup-screen">
+                    <div class="mockup-header">
+                        <div class="mockup-date">10月24日</div>
+                        <div class="mockup-day">金曜日</div>
+                    </div>
+                    
+                    <div class="mockup-gauge">
+                        <div class="dots-container">
+                            <div class="dots-line"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot elapsed"></div>
+                            <div class="dot current"></div>
+                            <div class="dot"></div>
+                            <div class="dot scheduled"></div>
+                            <div class="dot scheduled"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                        <div class="dots-labels">
+                            <span>0:00</span>
+                            <span>6:00</span>
+                            <span>12:00</span>
+                            <span>18:00</span>
+                            <span>24:00</span>
+                        </div>
+                    </div>
+
+                    <div class="mockup-stats">
+                        <div class="stats-simple">
+                            <div class="stat-card">
+                                <div class="stat-value">14.5h</div>
+                                <div class="stat-label">経過</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">9.5h</div>
+                                <div class="stat-label">残り</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <div class="note-title">💡 特徴</div>
+                    <div class="note-text">
+                        • 各ドットをタップでその時間のタスク追加<br>
+                        • 予定ドット（濃いグレー）をタップで予定詳細表示<br>
+                        • 現在時刻（大きな黒ドット）で今を一目で把握
+                    </div>
+                </div>
+            </div>
+
+            <!-- 円形確定版 -->
+            <div class="section">
+                <span class="section-badge">✓ 確定</span>
+                <div class="section-title">円形プログレスバー（V3改良版）</div>
+                <div class="section-description">
+                    24時間を時計のように円で表現。中央に現在時刻、経過時間、残り時間を全て表示。現在時刻の線は削除してスッキリと。
+                </div>
+
+                <div class="mockup-screen">
+                    <div class="mockup-header">
+                        <div class="mockup-date">10月24日</div>
+                        <div class="mockup-day">金曜日</div>
+                    </div>
+                    
+                    <div class="mockup-gauge">
+                        <div class="circular-progress">
+                            <div class="circle-container">
+                                <svg class="circle-bg" viewBox="0 0 220 220">
+                                    <!-- 背景円 -->
+                                    <circle cx="110" cy="110" r="90" fill="none" stroke="#f5f5f5" stroke-width="20"/>
+                                    
+                                    <!-- 経過時間（0時〜14.5時 = 60.4%） -->
+                                    <circle cx="110" cy="110" r="90" fill="none" stroke="#d0d0d0" stroke-width="20"
+                                            stroke-dasharray="565" stroke-dashoffset="224"
+                                            transform="rotate(-90 110 110)"/>
+                                    
+                                    <!-- 予定時間（16〜18時） -->
+                                    <circle cx="110" cy="110" r="90" fill="none" stroke="#8a8a8a" stroke-width="20"
+                                            stroke-dasharray="565" stroke-dashoffset="518"
+                                            transform="rotate(-90 110 110)"/>
+                                </svg>
+                                <div class="circle-stats-inside">
+                                    <div class="circle-main-value">14:30</div>
+                                    <div class="circle-stat-row">
+                                        <div class="circle-stat-item">
+                                            <div class="circle-stat-value-small">14.5h</div>
+                                            <div class="circle-stat-label-small">経過</div>
+                                        </div>
+                                        <div class="circle-stat-item">
+                                            <div class="circle-stat-value-small">9.5h</div>
+                                            <div class="circle-stat-label-small">残り</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <div class="note-title">💡 特徴</div>
+                    <div class="note-text">
+                        • 円をタップ/ドラッグでその時間帯にジャンプ<br>
+                        • 直感的で空き時間が一目瞭然<br>
+                        • 現在時刻の線を削除してスッキリしたデザイン
+                    </div>
+                </div>
+            </div>
+
+            <!-- 比較 -->
+            <div class="section">
+                <div class="section-title">2つのデザインの使い分け</div>
+                <div class="section-description">
+                    どちらも採用したいとのことでしたが、用途に応じて使い分けることも可能です。
+                </div>
+
+                <div class="comparison">
+                    <div class="comparison-item">
+                        <div class="comparison-label">ドット型</div>
+                        <div class="comparison-preview">
+                            <div class="mini-dots">
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot elapsed"></div>
+                                <div class="mini-dot current"></div>
+                                <div class="mini-dot"></div>
+                                <div class="mini-dot scheduled"></div>
+                                <div class="mini-dot scheduled"></div>
+                                <div class="mini-dot"></div>
+                                <div class="mini-dot"></div>
+                                <div class="mini-dot"></div>
+                                <div class="mini-dot"></div>
+                                <div class="mini-dot"></div>
+                                <div class="mini-dot"></div>
+                            </div>
+                            <div style="font-size: 10px; color: #666; margin-top: 8px;">
+                                ✓ コンパクト<br>
+                                ✓ タップしやすい<br>
+                                ✓ メイン画面推奨
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="comparison-item">
+                        <div class="comparison-label">円形</div>
+                        <div class="comparison-preview">
+                            <svg class="mini-circle" viewBox="0 0 80 80">
+                                <circle cx="40" cy="40" r="30" fill="none" stroke="#f5f5f5" stroke-width="8"/>
+                                <circle cx="40" cy="40" r="30" fill="none" stroke="#d0d0d0" stroke-width="8"
+                                        stroke-dasharray="188" stroke-dashoffset="75"
+                                        transform="rotate(-90 40 40)"/>
+                                <circle cx="40" cy="40" r="30" fill="none" stroke="#8a8a8a" stroke-width="8"
+                                        stroke-dasharray="188" stroke-dashoffset="172"
+                                        transform="rotate(-90 40 40)"/>
+                            </svg>
+                            <div style="font-size: 10px; color: #666; margin-top: 8px;">
+                                ✓ 視覚的<br>
+                                ✓ 空き時間一目瞭然<br>
+                                ✓ 統計画面推奨
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <div class="note-title">💡 提案</div>
+                    <div class="note-text">
+                        <strong>メイン画面：ドット型</strong> - コンパクトでタップしやすく、毎日見る画面に最適<br>
+                        <strong>統計・分析画面：円形</strong> - 視覚的で空き時間が一目瞭然、データの可視化に最適<br>
+                        <br>
+                        または、設定で切り替え可能にして、ユーザーの好みで選べるようにするのも良いかもしれません。
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

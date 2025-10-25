@@ -369,3 +369,59 @@ input[type="checkbox"]:checked::after {
   background: var(--text-secondary);
   color: var(--bg-primary);
 }
+
+/* サブタスク編集 */
+.subtask-edit-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.subtask-edit-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.subtask-duration-input {
+  width: 80px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.subtask-remove {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--border-medium);
+  border-radius: 50%;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.subtask-remove:hover {
+  background: var(--text-secondary);
+  color: var(--bg-primary);
+}
+
+.subtask-time-warning {
+  padding: 12px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  color: #856404;
+  font-size: 13px;
+  margin-bottom: 12px;
+}

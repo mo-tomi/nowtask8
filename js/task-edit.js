@@ -26,7 +26,10 @@ const TaskEditor = {
     }
 
     if (durationInput) {
-      durationInput.addEventListener('change', () => this.calculateEndTime());
+      durationInput.addEventListener('change', () => {
+        this.calculateEndTime();
+        this.checkSubtaskTimeWarning();
+      });
     }
 
     // モーダルを閉じる
@@ -297,17 +300,38 @@ const TaskEditor = {
           data-index="${index}"
           placeholder="サブタスク名"
         >
+        <input
+          type="number"
+          class="subtask-duration-input"
+          value="${subtask.duration || ''}"
+          data-index="${index}"
+          placeholder="分"
+          min="0"
+        >
         <button type="button" class="subtask-remove" data-index="${index}">×</button>
       </div>
     `).join('');
 
-    // サブタスク更新イベント
+    // サブタスク名更新イベント
     const inputs = subtaskList.querySelectorAll('.subtask-edit-input');
     inputs.forEach(input => {
       input.addEventListener('input', (e) => {
         const index = parseInt(e.target.dataset.index);
         if (this.currentTask.subtasks[index]) {
           this.currentTask.subtasks[index].name = e.target.value;
+        }
+      });
+    });
+
+    // サブタスク時間更新イベント
+    const durationInputs = subtaskList.querySelectorAll('.subtask-duration-input');
+    durationInputs.forEach(input => {
+      input.addEventListener('input', (e) => {
+        const index = parseInt(e.target.dataset.index);
+        if (this.currentTask.subtasks[index]) {
+          const value = parseInt(e.target.value);
+          this.currentTask.subtasks[index].duration = value > 0 ? value : null;
+          this.checkSubtaskTimeWarning();
         }
       });
     });
@@ -425,6 +449,35 @@ const TaskEditor = {
     }
 
     this.closeModal();
+  },
+
+  checkSubtaskTimeWarning() {
+    if (!this.currentTask) return;
+
+    const durationInput = document.getElementById('editDuration');
+    const mainTaskDuration = durationInput.value ? parseInt(durationInput.value) : null;
+
+    if (!mainTaskDuration) return;
+
+    const subtaskTotalDuration = this.calculateSubtaskTotalDuration(this.currentTask.subtasks);
+
+    const warningEl = document.getElementById('subtaskTimeWarning');
+    if (!warningEl) return;
+
+    if (subtaskTotalDuration > mainTaskDuration) {
+      warningEl.style.display = 'block';
+      warningEl.textContent = `⚠ サブタスクの合計時間（${subtaskTotalDuration}分）がメインタスクの時間（${mainTaskDuration}分）を超えています`;
+    } else {
+      warningEl.style.display = 'none';
+    }
+  },
+
+  calculateSubtaskTotalDuration(subtasks) {
+    if (!subtasks || subtasks.length === 0) return 0;
+
+    return subtasks.reduce((total, subtask) => {
+      return total + (subtask.duration || 0);
+    }, 0);
   },
 
   escapeHtml(text) {

@@ -408,6 +408,16 @@
   color: var(--text-tertiary);
 }
 
+.subtask-duration {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .subtask-add {
   font-size: 12px;
   color: var(--text-tertiary);

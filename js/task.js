@@ -492,10 +492,12 @@ const TaskManager = {
     const subtasksHtml = (subtasks && subtasks.length > 0)
       ? subtasks.map((subtask, index) => {
           const completedClass = subtask.completed ? 'completed' : '';
+          const durationText = subtask.duration ? `<span class="subtask-duration">${subtask.duration}分</span>` : '';
           return `
             <div class="subtask-item">
               <div class="subtask-checkbox ${completedClass}" data-task-id="${taskId}" data-subtask-index="${index}"></div>
               <div class="subtask-name ${completedClass}">${this.escapeHtml(subtask.name)}</div>
+              ${durationText}
             </div>
           `;
         }).join('')
