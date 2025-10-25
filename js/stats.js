@@ -119,10 +119,10 @@ const Stats = {
       currentTimeEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     }
     if (elapsedTimeEl) {
-      elapsedTimeEl.textContent = `経過 ${elapsedHours.toFixed(1)}h`;
+      elapsedTimeEl.textContent = `${elapsedHours.toFixed(1)}h`;
     }
     if (remainingTimeEl) {
-      remainingTimeEl.textContent = `残り ${Math.max(0, freeHours).toFixed(1)}h`;
+      remainingTimeEl.textContent = `${Math.max(0, freeHours).toFixed(1)}h`;
     }
 
     const circumference = 2 * Math.PI * 104;

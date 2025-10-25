@@ -52,23 +52,36 @@
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+  width: 100%;
 }
 
 .gauge-current-time {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
-.gauge-elapsed-time {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
+.gauge-time-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
 }
 
+.gauge-time-item {
+  text-align: center;
+}
+
+.gauge-elapsed-time,
 .gauge-remaining-time {
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.gauge-time-label {
+  font-size: 9px;
   color: var(--text-secondary);
 }
 
