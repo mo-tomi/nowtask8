@@ -490,11 +490,11 @@ const TaskManager = {
 
   renderSubtasks(subtasks, taskId) {
     const subtasksHtml = (subtasks && subtasks.length > 0)
-      ? subtasks.map(subtask => {
+      ? subtasks.map((subtask, index) => {
           const completedClass = subtask.completed ? 'completed' : '';
           return `
             <div class="subtask-item">
-              <div class="subtask-checkbox ${completedClass}"></div>
+              <div class="subtask-checkbox ${completedClass}" data-task-id="${taskId}" data-subtask-index="${index}"></div>
               <div class="subtask-name ${completedClass}">${this.escapeHtml(subtask.name)}</div>
             </div>
           `;
@@ -603,6 +603,16 @@ const TaskManager = {
         }
       });
     });
+
+    // サブタスクのチェックボックス
+    const subtaskCheckboxes = document.querySelectorAll('.subtask-checkbox');
+    subtaskCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('click', (e) => {
+        const taskId = e.currentTarget.dataset.taskId;
+        const subtaskIndex = parseInt(e.currentTarget.dataset.subtaskIndex);
+        this.toggleSubtaskComplete(taskId, subtaskIndex);
+      });
+    });
   },
 
   showSubtaskQuickInput(taskId) {
@@ -631,6 +641,19 @@ const TaskManager = {
     if (container) container.style.display = 'none';
     if (addBtn) addBtn.style.display = 'flex';
     if (input) input.value = '';
+  },
+
+  toggleSubtaskComplete(taskId, subtaskIndex) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (!task || !task.subtasks || !task.subtasks[subtaskIndex]) return;
+
+    task.subtasks[subtaskIndex].completed = !task.subtasks[subtaskIndex].completed;
+    task.updatedAt = new Date().toISOString();
+
+    Storage.saveTasks(this.tasks);
+    this.renderTasks();
+
+    console.log('サブタスクの完了状態を変更しました:', task.subtasks[subtaskIndex]);
   },
 
   addSubtaskInline(taskId, subtaskName) {
