@@ -127,9 +127,19 @@ const Calendar = {
     const hasTasksClass = taskCount > 0 ? 'has-tasks' : '';
     const dateStr = this.formatDateKey(date);
 
+    let shift = null;
+    let hasShiftClass = '';
+    if (window.ShiftManager) {
+      shift = ShiftManager.getShiftForDate(date);
+      if (shift) {
+        hasShiftClass = 'has-shift';
+      }
+    }
+
     return `
-      <div class="day-cell ${classes} ${hasTasksClass}" data-date="${dateStr}">
+      <div class="day-cell ${classes} ${hasTasksClass} ${hasShiftClass}" data-date="${dateStr}">
         <div class="day-number">${day}</div>
+        ${shift ? `<div class="shift-label">${this.escapeHtml(shift.name)}</div>` : ''}
         <div class="day-tasks">
           ${taskCount > 0 ? `<div class="task-count">${taskCount}</div>` : ''}
         </div>
@@ -143,14 +153,20 @@ const Calendar = {
       cell.addEventListener('click', () => {
         const dateStr = cell.getAttribute('data-date');
         if (dateStr) {
-          this.selectDay(dateStr);
+          if (window.ShiftManager && ShiftManager.shiftMode) {
+            const date = new Date(dateStr);
+            ShiftManager.selectDate(date);
+          } else {
+            this.selectDay(dateStr);
+          }
         }
       });
     });
   },
 
-  selectDay(dateStr) {
-    const date = new Date(dateStr);
+  selectDay(dateOrStr) {
+    const date = dateOrStr instanceof Date ? dateOrStr : new Date(dateOrStr);
+    const dateStr = this.formatDateKey(date);
     this.selectedDate = date;
 
     // 選択状態を更新
@@ -163,8 +179,14 @@ const Calendar = {
       }
     });
 
-    // 選択された日のタスク一覧を表示
-    this.showSelectedDayTasks(date);
+    // シフトモード時はShiftManagerに通知
+    if (window.ShiftManager && ShiftManager.shiftMode) {
+      ShiftManager.selectDate(date);
+    } else {
+      // 選択された日のタスク一覧を表示
+      this.showSelectedDayTasks(date);
+    }
+
     console.log('日付を選択しました:', dateStr);
   },
 

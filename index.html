@@ -110,8 +110,24 @@
 
       <!-- カレンダーエリア（非表示） -->
       <section class="calendar-section" id="calendarSection" style="display: none;">
+        <!-- カレンダーヘッダー -->
+        <div class="calendar-header-actions">
+          <button class="calendar-mode-btn" id="shiftModeBtn">シフト入力</button>
+        </div>
+
         <div class="calendar-container" id="calendarContainer">
           <!-- JSでカレンダーを生成 -->
+        </div>
+
+        <!-- シフト入力プリセットボタン（シフトモード時のみ表示） -->
+        <div class="shift-preset-area" id="shiftPresetArea" style="display: none;">
+          <div class="shift-preset-header">
+            <span class="shift-selected-date" id="shiftSelectedDate">日付を選択</span>
+            <button class="shift-preset-manage-btn" id="manageShiftPresetsBtn">プリセット管理</button>
+          </div>
+          <div class="shift-preset-buttons" id="shiftPresetButtons">
+            <!-- JSでプリセットボタンを生成 -->
+          </div>
         </div>
       </section>
 
@@ -339,16 +355,6 @@
           </div>
         </div>
 
-        <!-- シフト設定 -->
-        <div class="settings-section">
-          <h3 class="settings-section-title">シフト設定</h3>
-
-          <div class="settings-item">
-            <button class="settings-btn" id="manageShiftsBtn">シフトを管理</button>
-            <p class="settings-description">勤務スケジュールを登録・編集</p>
-          </div>
-        </div>
-
         <!-- データ管理 -->
         <div class="settings-section">
           <h3 class="settings-section-title">データ管理</h3>
@@ -518,114 +524,65 @@
     </div>
   </div>
 
-  <!-- シフト管理モーダル -->
-  <div class="modal-overlay" id="shiftModal" style="display: none;">
+  <!-- シフトプリセット管理モーダル -->
+  <div class="modal-overlay" id="shiftPresetModal" style="display: none;">
     <div class="modal-content">
       <div class="modal-header">
-        <h2 class="modal-title">シフト管理</h2>
-        <button class="modal-close-btn" id="shiftCloseBtn">×</button>
+        <h2 class="modal-title">シフトプリセット管理</h2>
+        <button class="modal-close-btn" id="shiftPresetCloseBtn">×</button>
       </div>
       <div class="modal-body">
 
-        <!-- シフト一覧 -->
-        <div class="shift-list" id="shiftList">
-          <!-- JSでシフトを生成 -->
+        <!-- プリセット一覧 -->
+        <div class="preset-list" id="presetList">
+          <!-- JSでプリセットを生成 -->
         </div>
 
-        <!-- シフト追加ボタン -->
-        <button class="add-shift-btn" id="addShiftBtn">+ シフトを追加</button>
+        <!-- プリセット追加ボタン -->
+        <button class="add-preset-btn" id="addPresetBtn">+ プリセットを追加</button>
 
       </div>
     </div>
   </div>
 
-  <!-- シフト編集モーダル -->
-  <div class="modal-overlay" id="shiftEditModal" style="display: none;">
+  <!-- プリセット編集モーダル -->
+  <div class="modal-overlay" id="presetEditModal" style="display: none;">
     <div class="modal-content">
       <div class="modal-header">
-        <h2 class="modal-title">シフト編集</h2>
-        <button class="modal-close-btn" id="shiftEditCloseBtn">×</button>
+        <h2 class="modal-title">プリセット編集</h2>
+        <button class="modal-close-btn" id="presetEditCloseBtn">×</button>
       </div>
       <div class="modal-body">
-        <form id="shiftEditForm">
+        <form id="presetEditForm">
 
-          <!-- シフト名 -->
+          <!-- プリセット名 -->
           <div class="form-group">
-            <label class="form-label">シフト名</label>
-            <input type="text" class="form-input" id="editShiftName" placeholder="例: 早番" required>
+            <label class="form-label">プリセット名</label>
+            <input type="text" class="form-input" id="editPresetName" placeholder="例: 夜勤" required>
           </div>
 
-          <!-- 開始日 -->
+          <!-- 勤務開始時刻（任意） -->
           <div class="form-group">
-            <label class="form-label">開始日</label>
-            <input type="date" class="form-input" id="editShiftStartDate" required>
+            <label class="form-label">勤務開始時刻（任意）</label>
+            <input type="time" class="form-input" id="editPresetStartTime">
+            <p class="settings-description">設定すると自動でタスクが生成されます</p>
           </div>
 
-          <!-- 終了日 -->
+          <!-- 勤務終了時刻（任意） -->
           <div class="form-group">
-            <label class="form-label">終了日（任意）</label>
-            <input type="date" class="form-input" id="editShiftEndDate">
-            <p class="settings-description">空欄の場合は1日のみ</p>
+            <label class="form-label">勤務終了時刻（任意）</label>
+            <input type="time" class="form-input" id="editPresetEndTime">
           </div>
 
-          <!-- 勤務開始時刻 -->
+          <!-- 休憩時間（任意） -->
           <div class="form-group">
-            <label class="form-label">勤務開始時刻</label>
-            <input type="time" class="form-input" id="editShiftStartTime" required>
-          </div>
-
-          <!-- 勤務終了時刻 -->
-          <div class="form-group">
-            <label class="form-label">勤務終了時刻</label>
-            <input type="time" class="form-input" id="editShiftEndTime" required>
-          </div>
-
-          <!-- 休憩時間 -->
-          <div class="form-group">
-            <label class="form-label">休憩時間（分）</label>
-            <input type="number" class="form-input" id="editShiftBreakTime" min="0" placeholder="例: 60">
-          </div>
-
-          <!-- 繰り返しパターン -->
-          <div class="form-group">
-            <label class="form-label">繰り返しパターン</label>
-            <select class="form-input" id="editShiftPattern">
-              <option value="none">繰り返しなし</option>
-              <option value="weekly">毎週</option>
-            </select>
-          </div>
-
-          <!-- 曜日選択（週次の場合） -->
-          <div class="form-group" id="shiftWeekdayGroup" style="display: none;">
-            <label class="form-label">曜日を選択</label>
-            <div class="weekday-selector">
-              <label class="weekday-checkbox">
-                <input type="checkbox" value="0"> 日
-              </label>
-              <label class="weekday-checkbox">
-                <input type="checkbox" value="1"> 月
-              </label>
-              <label class="weekday-checkbox">
-                <input type="checkbox" value="2"> 火
-              </label>
-              <label class="weekday-checkbox">
-                <input type="checkbox" value="3"> 水
-              </label>
-              <label class="weekday-checkbox">
-                <input type="checkbox" value="4"> 木
-              </label>
-              <label class="weekday-checkbox">
-                <input type="checkbox" value="5"> 金
-              </label>
-              <label class="weekday-checkbox">
-                <input type="checkbox" value="6"> 土
-              </label>
-            </div>
+            <label class="form-label">休憩時間（分・任意）</label>
+            <input type="number" class="form-input" id="editPresetBreakTime" min="0" placeholder="例: 60">
           </div>
 
           <!-- ボタン -->
           <div class="modal-actions">
-            <button type="button" class="btn-secondary" id="deleteShiftBtn">削除</button>
+            <button type="button" class="btn-secondary" id="deletePresetBtn">削除</button>
             <button type="submit" class="btn-primary">保存</button>
           </div>
         </form>

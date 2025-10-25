@@ -1,389 +1,224 @@
 const ShiftManager = {
-  shifts: [],
-  currentShiftId: null,
+  presets: [],
+  shifts: {},
+  currentPresetId: null,
+  shiftMode: false,
+  selectedDate: null,
+
+  defaultPresets: [
+    { name: '夜勤', startTime: '16:00', endTime: '09:00', breakTime: 60 },
+    { name: '明け', startTime: null, endTime: null, breakTime: 0 },
+    { name: '休み', startTime: null, endTime: null, breakTime: 0 },
+    { name: '予定', startTime: null, endTime: null, breakTime: 0 },
+    { name: '研修', startTime: '09:00', endTime: '17:00', breakTime: 60 },
+    { name: '仕事', startTime: '09:00', endTime: '18:00', breakTime: 60 }
+  ],
 
   init() {
+    this.presets = Storage.loadShiftPresets();
     this.shifts = Storage.loadShifts();
 
-    if (!Array.isArray(this.shifts)) {
-      this.shifts = [];
+    if (!Array.isArray(this.presets)) {
+      this.presets = [];
+    }
+
+    if (typeof this.shifts !== 'object' || this.shifts === null) {
+      this.shifts = {};
+    }
+
+    if (this.presets.length === 0) {
+      this.initializeDefaultPresets();
     }
 
     this.setupEventListeners();
   },
 
-  setupEventListeners() {
-    const manageBtn = document.getElementById('manageShiftsBtn');
-    const closeBtn = document.getElementById('shiftCloseBtn');
-    const modal = document.getElementById('shiftModal');
-    const addBtn = document.getElementById('addShiftBtn');
-
-    const editCloseBtn = document.getElementById('shiftEditCloseBtn');
-    const editModal = document.getElementById('shiftEditModal');
-    const editForm = document.getElementById('shiftEditForm');
-    const deleteBtn = document.getElementById('deleteShiftBtn');
-    const patternSelect = document.getElementById('editShiftPattern');
-
-    if (manageBtn) {
-      manageBtn.addEventListener('click', () => {
-        this.openShiftModal();
-      });
-    }
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        this.closeShiftModal();
-      });
-    }
-
-    if (modal) {
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          this.closeShiftModal();
-        }
-      });
-    }
-
-    if (addBtn) {
-      addBtn.addEventListener('click', () => {
-        this.openShiftEditModal();
-      });
-    }
-
-    if (editCloseBtn) {
-      editCloseBtn.addEventListener('click', () => {
-        this.closeShiftEditModal();
-      });
-    }
-
-    if (editModal) {
-      editModal.addEventListener('click', (e) => {
-        if (e.target === editModal) {
-          this.closeShiftEditModal();
-        }
-      });
-    }
-
-    if (editForm) {
-      editForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        this.saveShift();
-      });
-    }
-
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', () => {
-        this.deleteShift();
-      });
-    }
-
-    if (patternSelect) {
-      patternSelect.addEventListener('change', (e) => {
-        const weekdayGroup = document.getElementById('shiftWeekdayGroup');
-        if (weekdayGroup) {
-          weekdayGroup.style.display = e.target.value === 'weekly' ? 'block' : 'none';
-        }
-      });
-    }
-  },
-
-  openShiftModal() {
-    const modal = document.getElementById('shiftModal');
-    if (modal) {
-      this.renderShiftList();
-      modal.style.display = 'flex';
-    }
-  },
-
-  closeShiftModal() {
-    const modal = document.getElementById('shiftModal');
-    if (modal) {
-      modal.style.display = 'none';
-    }
-  },
-
-  renderShiftList() {
-    const list = document.getElementById('shiftList');
-    if (!list) return;
-
-    if (this.shifts.length === 0) {
-      list.innerHTML = '<div class="empty-state-text">シフトがありません</div>';
-      return;
-    }
-
-    list.innerHTML = this.shifts.map(shift => {
-      const dateText = this.getDateText(shift);
-      const timeText = `${shift.startTime}～${shift.endTime}`;
-      const durationText = this.calculateDurationText(shift);
-      const patternText = this.getPatternText(shift);
-
-      return `
-        <div class="shift-item" data-shift-id="${shift.id}">
-          <div class="shift-name">${this.escapeHtml(shift.name)}</div>
-          <div class="shift-details">
-            <div class="shift-detail">${dateText}</div>
-            <div class="shift-detail">${timeText}</div>
-            <div class="shift-detail">${durationText}</div>
-            ${patternText ? `<div class="shift-detail">${patternText}</div>` : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    const items = list.querySelectorAll('.shift-item');
-    items.forEach(item => {
-      item.addEventListener('click', () => {
-        const shiftId = item.dataset.shiftId;
-        this.openShiftEditModal(shiftId);
-      });
-    });
-  },
-
-  getDateText(shift) {
-    const startDate = new Date(shift.startDate);
-    const startStr = this.formatDate(startDate);
-
-    if (shift.endDate) {
-      const endDate = new Date(shift.endDate);
-      const endStr = this.formatDate(endDate);
-      return `${startStr} ～ ${endStr}`;
-    }
-
-    return startStr;
-  },
-
-  getPatternText(shift) {
-    if (shift.pattern === 'weekly') {
-      const days = ['日', '月', '火', '水', '木', '金', '土'];
-      const selectedDays = shift.repeatDays.map(d => days[d]).join('・');
-      return `毎週 ${selectedDays}`;
-    }
-    return '';
-  },
-
-  calculateDurationText(shift) {
-    const [startHour, startMin] = shift.startTime.split(':').map(Number);
-    const [endHour, endMin] = shift.endTime.split(':').map(Number);
-
-    let duration = (endHour * 60 + endMin) - (startHour * 60 + startMin);
-
-    if (duration < 0) {
-      duration += 24 * 60;
-    }
-
-    if (shift.breakTime) {
-      duration -= shift.breakTime;
-    }
-
-    const hours = Math.floor(duration / 60);
-    const minutes = duration % 60;
-
-    if (minutes === 0) {
-      return `${hours}時間`;
-    }
-    return `${hours}時間${minutes}分`;
-  },
-
-  formatDate(date) {
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    return `${month}/${day}`;
-  },
-
-  openShiftEditModal(shiftId = null) {
-    this.currentShiftId = shiftId;
-    const modal = document.getElementById('shiftEditModal');
-    if (!modal) return;
-
-    if (shiftId) {
-      const shift = this.shifts.find(s => s.id === shiftId);
-      if (shift) {
-        this.populateShiftForm(shift);
-      }
-    } else {
-      this.clearShiftForm();
-    }
-
-    modal.style.display = 'flex';
-  },
-
-  closeShiftEditModal() {
-    const modal = document.getElementById('shiftEditModal');
-    if (modal) {
-      modal.style.display = 'none';
-    }
-    this.currentShiftId = null;
-  },
-
-  populateShiftForm(shift) {
-    const nameInput = document.getElementById('editShiftName');
-    const startDateInput = document.getElementById('editShiftStartDate');
-    const endDateInput = document.getElementById('editShiftEndDate');
-    const startTimeInput = document.getElementById('editShiftStartTime');
-    const endTimeInput = document.getElementById('editShiftEndTime');
-    const breakTimeInput = document.getElementById('editShiftBreakTime');
-    const patternSelect = document.getElementById('editShiftPattern');
-    const weekdayGroup = document.getElementById('shiftWeekdayGroup');
-
-    if (nameInput) nameInput.value = shift.name;
-    if (startDateInput) startDateInput.value = shift.startDate;
-    if (endDateInput) endDateInput.value = shift.endDate || '';
-    if (startTimeInput) startTimeInput.value = shift.startTime;
-    if (endTimeInput) endTimeInput.value = shift.endTime;
-    if (breakTimeInput) breakTimeInput.value = shift.breakTime || '';
-    if (patternSelect) {
-      patternSelect.value = shift.pattern || 'none';
-      if (weekdayGroup) {
-        weekdayGroup.style.display = shift.pattern === 'weekly' ? 'block' : 'none';
-      }
-    }
-
-    const checkboxes = document.querySelectorAll('#shiftWeekdayGroup .weekday-checkbox input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-      checkbox.checked = shift.repeatDays && shift.repeatDays.includes(parseInt(checkbox.value));
-    });
-  },
-
-  clearShiftForm() {
-    const nameInput = document.getElementById('editShiftName');
-    const startDateInput = document.getElementById('editShiftStartDate');
-    const endDateInput = document.getElementById('editShiftEndDate');
-    const startTimeInput = document.getElementById('editShiftStartTime');
-    const endTimeInput = document.getElementById('editShiftEndTime');
-    const breakTimeInput = document.getElementById('editShiftBreakTime');
-    const patternSelect = document.getElementById('editShiftPattern');
-    const weekdayGroup = document.getElementById('shiftWeekdayGroup');
-
-    if (nameInput) nameInput.value = '';
-    if (startDateInput) startDateInput.value = '';
-    if (endDateInput) endDateInput.value = '';
-    if (startTimeInput) startTimeInput.value = '';
-    if (endTimeInput) endTimeInput.value = '';
-    if (breakTimeInput) breakTimeInput.value = '';
-    if (patternSelect) {
-      patternSelect.value = 'none';
-      if (weekdayGroup) weekdayGroup.style.display = 'none';
-    }
-
-    const checkboxes = document.querySelectorAll('#shiftWeekdayGroup .weekday-checkbox input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-      checkbox.checked = false;
-    });
-  },
-
-  saveShift() {
-    const nameInput = document.getElementById('editShiftName');
-    const startDateInput = document.getElementById('editShiftStartDate');
-    const endDateInput = document.getElementById('editShiftEndDate');
-    const startTimeInput = document.getElementById('editShiftStartTime');
-    const endTimeInput = document.getElementById('editShiftEndTime');
-    const breakTimeInput = document.getElementById('editShiftBreakTime');
-    const patternSelect = document.getElementById('editShiftPattern');
-
-    if (!nameInput.value.trim()) {
-      alert('シフト名を入力してください');
-      return;
-    }
-
-    if (!startDateInput.value) {
-      alert('開始日を入力してください');
-      return;
-    }
-
-    if (!startTimeInput.value || !endTimeInput.value) {
-      alert('勤務時間を入力してください');
-      return;
-    }
-
-    const selectedDays = [];
-    const checkboxes = document.querySelectorAll('#shiftWeekdayGroup .weekday-checkbox input[type="checkbox"]:checked');
-    checkboxes.forEach(checkbox => {
-      selectedDays.push(parseInt(checkbox.value));
-    });
-
-    if (this.currentShiftId) {
-      const shift = this.shifts.find(s => s.id === this.currentShiftId);
-      if (shift) {
-        shift.name = nameInput.value.trim();
-        shift.startDate = startDateInput.value;
-        shift.endDate = endDateInput.value || null;
-        shift.startTime = startTimeInput.value;
-        shift.endTime = endTimeInput.value;
-        shift.breakTime = parseInt(breakTimeInput.value) || 0;
-        shift.pattern = patternSelect.value;
-        shift.repeatDays = selectedDays.length > 0 ? selectedDays : [];
-        shift.updatedAt = new Date().toISOString();
-      }
-    } else {
-      const newShift = this.createShift(
-        nameInput.value.trim(),
-        startDateInput.value,
-        endDateInput.value || null,
-        startTimeInput.value,
-        endTimeInput.value,
-        parseInt(breakTimeInput.value) || 0,
-        patternSelect.value,
-        selectedDays
+  initializeDefaultPresets() {
+    this.defaultPresets.forEach(preset => {
+      const newPreset = this.createPreset(
+        preset.name,
+        preset.startTime,
+        preset.endTime,
+        preset.breakTime
       );
-      this.shifts.push(newShift);
+      this.presets.push(newPreset);
+    });
+    Storage.saveShiftPresets(this.presets);
+    console.log('デフォルトプリセットを初期化しました');
+  },
+
+  setupEventListeners() {
+    const shiftModeBtn = document.getElementById('shiftModeBtn');
+    const managePresetsBtn = document.getElementById('manageShiftPresetsBtn');
+    const presetCloseBtn = document.getElementById('shiftPresetCloseBtn');
+    const presetModal = document.getElementById('shiftPresetModal');
+    const addPresetBtn = document.getElementById('addPresetBtn');
+    const presetEditCloseBtn = document.getElementById('presetEditCloseBtn');
+    const presetEditModal = document.getElementById('presetEditModal');
+    const presetEditForm = document.getElementById('presetEditForm');
+    const deletePresetBtn = document.getElementById('deletePresetBtn');
+
+    if (shiftModeBtn) {
+      shiftModeBtn.addEventListener('click', () => {
+        this.toggleShiftMode();
+      });
     }
+
+    if (managePresetsBtn) {
+      managePresetsBtn.addEventListener('click', () => {
+        this.openPresetModal();
+      });
+    }
+
+    if (presetCloseBtn) {
+      presetCloseBtn.addEventListener('click', () => {
+        this.closePresetModal();
+      });
+    }
+
+    if (presetModal) {
+      presetModal.addEventListener('click', (e) => {
+        if (e.target === presetModal) {
+          this.closePresetModal();
+        }
+      });
+    }
+
+    if (addPresetBtn) {
+      addPresetBtn.addEventListener('click', () => {
+        this.openPresetEditModal();
+      });
+    }
+
+    if (presetEditCloseBtn) {
+      presetEditCloseBtn.addEventListener('click', () => {
+        this.closePresetEditModal();
+      });
+    }
+
+    if (presetEditModal) {
+      presetEditModal.addEventListener('click', (e) => {
+        if (e.target === presetEditModal) {
+          this.closePresetEditModal();
+        }
+      });
+    }
+
+    if (presetEditForm) {
+      presetEditForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.savePreset();
+      });
+    }
+
+    if (deletePresetBtn) {
+      deletePresetBtn.addEventListener('click', () => {
+        this.deletePreset();
+      });
+    }
+  },
+
+  toggleShiftMode() {
+    this.shiftMode = !this.shiftMode;
+
+    const shiftModeBtn = document.getElementById('shiftModeBtn');
+    const shiftPresetArea = document.getElementById('shiftPresetArea');
+    const quickInput = document.querySelector('.quick-input');
+
+    if (shiftModeBtn) {
+      shiftModeBtn.classList.toggle('active', this.shiftMode);
+      shiftModeBtn.textContent = this.shiftMode ? 'シフト入力中' : 'シフト入力';
+    }
+
+    if (shiftPresetArea) {
+      shiftPresetArea.style.display = this.shiftMode ? 'block' : 'none';
+    }
+
+    if (quickInput) {
+      quickInput.style.display = this.shiftMode ? 'none' : 'flex';
+    }
+
+    if (this.shiftMode) {
+      this.renderPresetButtons();
+    }
+
+    console.log('シフト入力モード:', this.shiftMode);
+  },
+
+  renderPresetButtons() {
+    const container = document.getElementById('shiftPresetButtons');
+    if (!container) return;
+
+    container.innerHTML = this.presets.map(preset => `
+      <button class="shift-preset-btn" data-preset-id="${preset.id}">
+        ${this.escapeHtml(preset.name)}
+      </button>
+    `).join('');
+
+    const buttons = container.querySelectorAll('.shift-preset-btn');
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const presetId = button.dataset.presetId;
+        this.applyPreset(presetId);
+      });
+    });
+  },
+
+  selectDate(date) {
+    this.selectedDate = date;
+
+    const dateLabel = document.getElementById('shiftSelectedDate');
+    if (dateLabel) {
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      dateLabel.textContent = `${month}月${day}日`;
+    }
+  },
+
+  applyPreset(presetId) {
+    if (!this.selectedDate) {
+      alert('日付を選択してください');
+      return;
+    }
+
+    const preset = this.presets.find(p => p.id === presetId);
+    if (!preset) return;
+
+    const dateKey = this.formatDateKey(this.selectedDate);
+
+    this.shifts[dateKey] = {
+      presetId: preset.id,
+      name: preset.name,
+      startTime: preset.startTime,
+      endTime: preset.endTime,
+      breakTime: preset.breakTime,
+      date: dateKey
+    };
 
     Storage.saveShifts(this.shifts);
-    this.generateTasksFromShifts();
-    this.closeShiftEditModal();
-    this.renderShiftList();
-    console.log('シフトを保存しました');
-  },
 
-  deleteShift() {
-    if (!this.currentShiftId) return;
-
-    if (confirm('このシフトを削除しますか？')) {
-      this.shifts = this.shifts.filter(s => s.id !== this.currentShiftId);
-      Storage.saveShifts(this.shifts);
-      this.closeShiftEditModal();
-      this.renderShiftList();
-      console.log('シフトを削除しました');
+    if (preset.startTime && preset.endTime) {
+      this.createTaskFromShift(this.shifts[dateKey], this.selectedDate);
     }
-  },
 
-  createShift(name, startDate, endDate, startTime, endTime, breakTime, pattern, repeatDays) {
-    return {
-      id: `shift_${Date.now()}`,
-      name: name,
-      startDate: startDate,
-      endDate: endDate,
-      startTime: startTime,
-      endTime: endTime,
-      breakTime: breakTime,
-      pattern: pattern,
-      repeatDays: repeatDays,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-  },
-
-  generateTasksFromShifts() {
-    this.shifts.forEach(shift => {
-      const startDate = new Date(shift.startDate);
-      const endDate = shift.endDate ? new Date(shift.endDate) : new Date(shift.startDate);
-
-      const currentDate = new Date(startDate);
-      while (currentDate <= endDate) {
-        if (this.shouldGenerateTaskForDate(shift, currentDate)) {
-          this.createTaskFromShift(shift, currentDate);
-        }
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-    });
-  },
-
-  shouldGenerateTaskForDate(shift, date) {
-    if (shift.pattern === 'weekly') {
-      const dayOfWeek = date.getDay();
-      return shift.repeatDays && shift.repeatDays.includes(dayOfWeek);
+    if (window.Calendar) {
+      Calendar.renderCalendar();
     }
-    return true;
+
+    this.moveToNextDay();
+
+    console.log('シフトを登録しました:', preset.name, dateKey);
+  },
+
+  moveToNextDay() {
+    if (!this.selectedDate) return;
+
+    const nextDate = new Date(this.selectedDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+
+    if (window.Calendar) {
+      Calendar.selectDay(nextDate);
+    }
   },
 
   createTaskFromShift(shift, date) {
@@ -392,7 +227,8 @@ const ShiftManager = {
     const existingTask = TaskManager.tasks.find(task => {
       return task.name === shift.name &&
              task.startTime &&
-             new Date(task.startTime).toDateString() === date.toDateString();
+             new Date(task.startTime).toDateString() === date.toDateString() &&
+             task.tags && task.tags.includes('シフト');
     });
 
     if (existingTask) {
@@ -428,6 +264,182 @@ const ShiftManager = {
     Storage.saveTasks(TaskManager.tasks);
 
     console.log('シフトからタスクを生成しました:', shift.name);
+  },
+
+  getShiftForDate(date) {
+    const dateKey = this.formatDateKey(date);
+    return this.shifts[dateKey] || null;
+  },
+
+  openPresetModal() {
+    const modal = document.getElementById('shiftPresetModal');
+    if (modal) {
+      this.renderPresetList();
+      modal.style.display = 'flex';
+    }
+  },
+
+  closePresetModal() {
+    const modal = document.getElementById('shiftPresetModal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  },
+
+  renderPresetList() {
+    const list = document.getElementById('presetList');
+    if (!list) return;
+
+    if (this.presets.length === 0) {
+      list.innerHTML = '<div class="empty-state-text">プリセットがありません</div>';
+      return;
+    }
+
+    list.innerHTML = this.presets.map(preset => {
+      let details = '';
+      if (preset.startTime && preset.endTime) {
+        details = `${preset.startTime}～${preset.endTime}`;
+        if (preset.breakTime) {
+          details += ` (休憩${preset.breakTime}分)`;
+        }
+      } else {
+        details = '時間設定なし';
+      }
+
+      return `
+        <div class="preset-item" data-preset-id="${preset.id}">
+          <div class="preset-name">${this.escapeHtml(preset.name)}</div>
+          <div class="preset-details">${details}</div>
+        </div>
+      `;
+    }).join('');
+
+    const items = list.querySelectorAll('.preset-item');
+    items.forEach(item => {
+      item.addEventListener('click', () => {
+        const presetId = item.dataset.presetId;
+        this.openPresetEditModal(presetId);
+      });
+    });
+  },
+
+  openPresetEditModal(presetId = null) {
+    this.currentPresetId = presetId;
+    const modal = document.getElementById('presetEditModal');
+    if (!modal) return;
+
+    if (presetId) {
+      const preset = this.presets.find(p => p.id === presetId);
+      if (preset) {
+        this.populatePresetForm(preset);
+      }
+    } else {
+      this.clearPresetForm();
+    }
+
+    modal.style.display = 'flex';
+  },
+
+  closePresetEditModal() {
+    const modal = document.getElementById('presetEditModal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+    this.currentPresetId = null;
+  },
+
+  populatePresetForm(preset) {
+    const nameInput = document.getElementById('editPresetName');
+    const startTimeInput = document.getElementById('editPresetStartTime');
+    const endTimeInput = document.getElementById('editPresetEndTime');
+    const breakTimeInput = document.getElementById('editPresetBreakTime');
+
+    if (nameInput) nameInput.value = preset.name;
+    if (startTimeInput) startTimeInput.value = preset.startTime || '';
+    if (endTimeInput) endTimeInput.value = preset.endTime || '';
+    if (breakTimeInput) breakTimeInput.value = preset.breakTime || '';
+  },
+
+  clearPresetForm() {
+    const nameInput = document.getElementById('editPresetName');
+    const startTimeInput = document.getElementById('editPresetStartTime');
+    const endTimeInput = document.getElementById('editPresetEndTime');
+    const breakTimeInput = document.getElementById('editPresetBreakTime');
+
+    if (nameInput) nameInput.value = '';
+    if (startTimeInput) startTimeInput.value = '';
+    if (endTimeInput) endTimeInput.value = '';
+    if (breakTimeInput) breakTimeInput.value = '';
+  },
+
+  savePreset() {
+    const nameInput = document.getElementById('editPresetName');
+    const startTimeInput = document.getElementById('editPresetStartTime');
+    const endTimeInput = document.getElementById('editPresetEndTime');
+    const breakTimeInput = document.getElementById('editPresetBreakTime');
+
+    if (!nameInput.value.trim()) {
+      alert('プリセット名を入力してください');
+      return;
+    }
+
+    if (this.currentPresetId) {
+      const preset = this.presets.find(p => p.id === this.currentPresetId);
+      if (preset) {
+        preset.name = nameInput.value.trim();
+        preset.startTime = startTimeInput.value || null;
+        preset.endTime = endTimeInput.value || null;
+        preset.breakTime = parseInt(breakTimeInput.value) || 0;
+        preset.updatedAt = new Date().toISOString();
+      }
+    } else {
+      const newPreset = this.createPreset(
+        nameInput.value.trim(),
+        startTimeInput.value || null,
+        endTimeInput.value || null,
+        parseInt(breakTimeInput.value) || 0
+      );
+      this.presets.push(newPreset);
+    }
+
+    Storage.saveShiftPresets(this.presets);
+    this.closePresetEditModal();
+    this.renderPresetList();
+    this.renderPresetButtons();
+
+    console.log('プリセットを保存しました');
+  },
+
+  deletePreset() {
+    if (!this.currentPresetId) return;
+
+    if (confirm('このプリセットを削除しますか？')) {
+      this.presets = this.presets.filter(p => p.id !== this.currentPresetId);
+      Storage.saveShiftPresets(this.presets);
+      this.closePresetEditModal();
+      this.renderPresetList();
+      this.renderPresetButtons();
+      console.log('プリセットを削除しました');
+    }
+  },
+
+  createPreset(name, startTime, endTime, breakTime) {
+    return {
+      id: `preset_${Date.now()}`,
+      name: name,
+      startTime: startTime,
+      endTime: endTime,
+      breakTime: breakTime,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+  },
+
+  formatDateKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   },
 
   escapeHtml(text) {

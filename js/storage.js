@@ -1,6 +1,7 @@
 const STORAGE_KEYS = {
   TASKS: 'nowtask_tasks',
   ROUTINES: 'nowtask_routines',
+  SHIFT_PRESETS: 'nowtask_shift_presets',
   SHIFTS: 'nowtask_shifts',
   SETTINGS: 'nowtask_settings'
 };
@@ -46,6 +47,26 @@ const Storage = {
     }
   },
 
+  saveShiftPresets(presets) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.SHIFT_PRESETS, JSON.stringify(presets));
+      return true;
+    } catch (error) {
+      console.error('シフトプリセットの保存に失敗しました:', error);
+      return false;
+    }
+  },
+
+  loadShiftPresets() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.SHIFT_PRESETS);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('シフトプリセットの読み込みに失敗しました:', error);
+      return [];
+    }
+  },
+
   saveShifts(shifts) {
     try {
       localStorage.setItem(STORAGE_KEYS.SHIFTS, JSON.stringify(shifts));
@@ -59,10 +80,10 @@ const Storage = {
   loadShifts() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SHIFTS);
-      return data ? JSON.parse(data) : [];
+      return data ? JSON.parse(data) : {};
     } catch (error) {
       console.error('シフトの読み込みに失敗しました:', error);
-      return [];
+      return {};
     }
   },
 
