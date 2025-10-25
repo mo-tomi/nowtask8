@@ -36,7 +36,8 @@ const TaskManager = {
 
     if (addTaskBtn) {
       addTaskBtn.addEventListener('click', () => {
-        this.showTaskMenu(null);
+        const currentDate = Gauge.currentDate;
+        this.showTaskMenu(null, currentDate);
       });
     }
 
@@ -585,9 +586,9 @@ const TaskManager = {
     console.log('サブタスクを追加しました:', subtaskName);
   },
 
-  showTaskMenu(taskId) {
+  showTaskMenu(taskId, defaultDate) {
     if (typeof TaskEditor !== 'undefined' && TaskEditor.openModal) {
-      TaskEditor.openModal(taskId);
+      TaskEditor.openModal(taskId, defaultDate);
     }
   },
 

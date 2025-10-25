@@ -87,7 +87,7 @@ const TaskEditor = {
     });
   },
 
-  openModal(taskId) {
+  openModal(taskId, defaultDate) {
     this.currentTaskId = taskId;
 
     if (taskId) {
@@ -99,7 +99,7 @@ const TaskEditor = {
     } else {
       // 新規タスクの追加
       this.currentTask = null;
-      this.clearForm();
+      this.clearForm(defaultDate);
     }
 
     const modal = document.getElementById('taskEditModal');
@@ -158,17 +158,24 @@ const TaskEditor = {
     this.renderSubtasks(task.subtasks || []);
   },
 
-  clearForm() {
+  clearForm(defaultDate) {
     // タスク名
     const taskNameInput = document.getElementById('editTaskName');
     if (taskNameInput) {
       taskNameInput.value = '';
     }
 
-    // 開始時刻
+    // 開始時刻（デフォルト日付がある場合は設定）
     const startTimeInput = document.getElementById('editStartTime');
     if (startTimeInput) {
-      startTimeInput.value = '';
+      if (defaultDate) {
+        // デフォルト日付の9:00に設定
+        const date = new Date(defaultDate);
+        date.setHours(9, 0, 0, 0);
+        startTimeInput.value = this.formatDateTimeLocal(date.toISOString());
+      } else {
+        startTimeInput.value = '';
+      }
     }
 
     // 終了時刻
