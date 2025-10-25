@@ -171,8 +171,10 @@ const TaskEditor = {
       if (defaultDate) {
         // デフォルト日付の9:00に設定
         const date = new Date(defaultDate);
-        date.setHours(9, 0, 0, 0);
-        startTimeInput.value = this.formatDateTimeLocal(date.toISOString());
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        startTimeInput.value = `${year}-${month}-${day}T09:00`;
       } else {
         startTimeInput.value = '';
       }
