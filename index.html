@@ -71,6 +71,7 @@
         <div class="section-header">
           <div class="section-title" id="sectionTitle">10月24日（金）</div>
           <div class="section-actions">
+            <button class="edit-mode-btn" id="editModeBtn" style="display: none;">編集</button>
             <button class="add-task-btn" id="addTaskBtn" title="タスク追加">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -210,7 +211,7 @@
     </main>
 
     <!-- クイック入力（画面下部に固定） -->
-    <div class="quick-input">
+    <div class="quick-input" id="quickInputBar">
       <div class="input-wrapper">
         <input type="text" class="input-field" id="quickInput" placeholder="タスクを追加" autocomplete="off">
       </div>
@@ -219,6 +220,25 @@
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
+      </button>
+    </div>
+
+    <!-- 複数選択モード操作バー -->
+    <div class="multi-select-bar" id="multiSelectBar" style="display: none;">
+      <button class="multi-select-btn" id="completeSelectedBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        <span>完了</span>
+      </button>
+      <button class="multi-select-btn" id="deleteSelectedBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+        </svg>
+        <span>削除</span>
+      </button>
+      <button class="multi-select-btn cancel-btn" id="cancelSelectBtn">
+        <span>キャンセル</span>
       </button>
     </div>
 
