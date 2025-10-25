@@ -23,7 +23,7 @@ const Stats = {
   },
 
   showStats() {
-    if (window.App && App.showStatsView) {
+    if (typeof App !== 'undefined' && App.showStatsView) {
       App.showStatsView();
     }
     this.updateStats();
