@@ -225,12 +225,19 @@ const TaskManager = {
 
     if (!taskList || !completedTasks) return;
 
-    const todayTasks = this.getTodayTasks();
-    const activeTasks = todayTasks.filter(t => !t.completed);
-    const doneTasks = todayTasks.filter(t => t.completed);
+    // フィルタを適用したすべてのタスクを取得
+    const allFilteredTasks = this.tasks.filter(task => this.filterTask(task));
 
-    taskList.innerHTML = activeTasks.length > 0
-      ? this.renderTasksWithOverlapDetection(activeTasks)
+    // 完了済みと未完了に分ける
+    const activeTasks = allFilteredTasks.filter(t => !t.completed);
+    const doneTasks = allFilteredTasks.filter(t => t.completed);
+
+    // 未完了タスクを日付ごとにグループ化
+    const tasksByDate = this.groupTasksByDate(activeTasks);
+
+    // 日付ごとにレンダリング
+    taskList.innerHTML = tasksByDate.length > 0
+      ? tasksByDate.map(group => this.renderDateGroup(group)).join('')
       : '<div class="empty-state"><div class="empty-state-text">タスクがありません</div></div>';
 
     completedTasks.innerHTML = doneTasks.map(task => this.renderTaskCard(task)).join('');
@@ -241,6 +248,53 @@ const TaskManager = {
     }
 
     this.attachTaskEventListeners();
+  },
+
+  groupTasksByDate(tasks) {
+    const groups = {};
+
+    tasks.forEach(task => {
+      let dateKey;
+      if (task.startTime) {
+        dateKey = new Date(task.startTime).toDateString();
+      } else {
+        dateKey = new Date(task.createdAt).toDateString();
+      }
+
+      if (!groups[dateKey]) {
+        groups[dateKey] = {
+          dateKey: dateKey,
+          date: task.startTime ? new Date(task.startTime) : new Date(task.createdAt),
+          tasks: []
+        };
+      }
+      groups[dateKey].tasks.push(task);
+    });
+
+    // 日付順にソート
+    return Object.values(groups).sort((a, b) => a.date - b.date);
+  },
+
+  renderDateGroup(group) {
+    const dateObj = group.date;
+    const year = dateObj.getFullYear();
+    const month = dateObj.getMonth() + 1;
+    const day = dateObj.getDate();
+    const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+    const dayOfWeek = dayNames[dateObj.getDay()];
+
+    const today = new Date();
+    const isToday = dateObj.toDateString() === today.toDateString();
+    const dateLabel = isToday ? '今日' : `${month}月${day}日（${dayOfWeek}）`;
+
+    const tasksHtml = this.renderTasksWithOverlapDetection(group.tasks);
+
+    return `
+      <div class="date-group">
+        <div class="date-group-header">${dateLabel}</div>
+        ${tasksHtml}
+      </div>
+    `;
   },
 
   renderTasksWithOverlapDetection(tasks) {

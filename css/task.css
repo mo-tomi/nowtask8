@@ -9,6 +9,20 @@
   margin-bottom: var(--spacing-xl);
 }
 
+/* 日付グループ */
+.date-group {
+  margin-bottom: 24px;
+}
+
+.date-group-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 8px 0;
+  margin-bottom: 12px;
+  border-bottom: 2px solid var(--border-light);
+}
+
 /* 重複グループ */
 .overlap-group {
   margin-bottom: 16px;
