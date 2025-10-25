@@ -153,12 +153,7 @@ const Calendar = {
       cell.addEventListener('click', () => {
         const dateStr = cell.getAttribute('data-date');
         if (dateStr) {
-          if (window.ShiftManager && ShiftManager.shiftMode) {
-            const date = new Date(dateStr);
-            ShiftManager.selectDate(date);
-          } else {
-            this.selectDay(dateStr);
-          }
+          this.selectDay(dateStr);
         }
       });
     });
