@@ -254,9 +254,8 @@ const ShiftManager = {
 
     Storage.saveShifts(this.shifts);
 
-    if (preset.startTime && preset.endTime) {
-      this.createTaskFromShift(this.shifts[dateKey], this.selectedDate);
-    }
+    // すべてのシフトからタスクを生成（時刻なしシフトも含む）
+    this.createTaskFromShift(this.shifts[dateKey], this.selectedDate);
 
     if (typeof Calendar !== 'undefined') {
       Calendar.renderCalendar();
@@ -286,42 +285,53 @@ const ShiftManager = {
   createTaskFromShift(shift, date) {
     if (typeof TaskManager === 'undefined') return;
 
+    // 既存のシフトタスクを検索（時刻あり・なし両方に対応）
     const existingTask = TaskManager.tasks.find(task => {
-      return task.name === shift.name &&
-             task.startTime &&
-             new Date(task.startTime).toDateString() === date.toDateString() &&
-             task.tags && task.tags.includes('シフト');
+      if (!task.tags || !task.tags.includes('シフト')) return false;
+      if (task.name !== shift.name) return false;
+
+      // 時刻ありシフト
+      if (task.startTime) {
+        return new Date(task.startTime).toDateString() === date.toDateString();
+      }
+      // 時刻なしシフト
+      return new Date(task.createdAt).toDateString() === date.toDateString();
     });
 
     if (existingTask) {
       return;
     }
 
-    const [startHour, startMin] = shift.startTime.split(':').map(Number);
-    const [endHour, endMin] = shift.endTime.split(':').map(Number);
-
-    const startTime = new Date(date);
-    startTime.setHours(startHour, startMin, 0, 0);
-
-    const endTime = new Date(date);
-    endTime.setHours(endHour, endMin, 0, 0);
-
-    if (endTime <= startTime) {
-      endTime.setDate(endTime.getDate() + 1);
-    }
-
-    let duration = Math.round((endTime - startTime) / 1000 / 60);
-    if (shift.breakTime) {
-      duration -= shift.breakTime;
-    }
-
-    const task = TaskManager.createTask(shift.name, {
-      startTime: startTime.toISOString(),
-      endTime: endTime.toISOString(),
-      duration: duration,
+    let taskData = {
       tags: ['シフト']
-    });
+    };
 
+    // 時刻ありシフトの場合
+    if (shift.startTime && shift.endTime) {
+      const [startHour, startMin] = shift.startTime.split(':').map(Number);
+      const [endHour, endMin] = shift.endTime.split(':').map(Number);
+
+      const startTime = new Date(date);
+      startTime.setHours(startHour, startMin, 0, 0);
+
+      const endTime = new Date(date);
+      endTime.setHours(endHour, endMin, 0, 0);
+
+      if (endTime <= startTime) {
+        endTime.setDate(endTime.getDate() + 1);
+      }
+
+      let duration = Math.round((endTime - startTime) / 1000 / 60);
+      if (shift.breakTime) {
+        duration -= shift.breakTime;
+      }
+
+      taskData.startTime = startTime.toISOString();
+      taskData.endTime = endTime.toISOString();
+      taskData.duration = duration;
+    }
+
+    const task = TaskManager.createTask(shift.name, taskData);
     TaskManager.tasks.push(task);
     Storage.saveTasks(TaskManager.tasks);
 
