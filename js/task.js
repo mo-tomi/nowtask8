@@ -591,15 +591,21 @@ const TaskManager = {
       });
     });
 
-    // サブタスククイック追加のEnterキー
+    // サブタスククイック追加のEnterキー・Escキー
     const subtaskInputs = document.querySelectorAll('.subtask-quick-input-field');
     subtaskInputs.forEach(input => {
-      input.addEventListener('keypress', (e) => {
+      input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
+          e.preventDefault();
           e.stopPropagation();
           const container = e.currentTarget.closest('.subtask-quick-input');
           const taskId = container.dataset.taskId;
           this.addSubtaskInline(taskId, e.target.value.trim());
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          const container = e.currentTarget.closest('.subtask-quick-input');
+          this.hideSubtaskQuickInput(container);
         }
       });
     });
