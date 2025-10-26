@@ -310,8 +310,14 @@ const Calendar = {
 
     const dateStr = this.formatDateKey(date);
     return TaskManager.tasks.filter(task => {
+      // startTimeがある場合はそれを使用
       if (task.startTime) {
         const taskDate = new Date(task.startTime);
+        return this.formatDateKey(taskDate) === dateStr;
+      }
+      // startTimeがない場合はcreatedAtを使用
+      if (task.createdAt) {
+        const taskDate = new Date(task.createdAt);
         return this.formatDateKey(taskDate) === dateStr;
       }
       return false;
