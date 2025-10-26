@@ -443,7 +443,7 @@ const TaskManager = {
     // 実効時間を取得（メインタスクの時間 or サブタスクの合計）
     const effectiveDuration = this.getEffectiveDuration(task);
     const durationBadge = effectiveDuration > 0
-      ? `<span class="task-duration-badge">${effectiveDuration}分</span>`
+      ? `<span class="task-duration-badge">${this.formatDuration(effectiveDuration)}</span>`
       : '';
 
     const completedClass = task.completed ? 'completed' : '';
@@ -531,7 +531,7 @@ const TaskManager = {
     const subtasksHtml = (subtasks && subtasks.length > 0)
       ? subtasks.map((subtask, index) => {
           const completedClass = subtask.completed ? 'completed' : '';
-          const durationText = subtask.duration ? `<span class="subtask-duration">${subtask.duration}分</span>` : '';
+          const durationText = subtask.duration ? `<span class="subtask-duration">${this.formatDuration(subtask.duration)}</span>` : '';
           return `
             <div class="subtask-item">
               <div class="subtask-checkbox ${completedClass}" data-task-id="${taskId}" data-subtask-index="${index}"></div>
@@ -565,6 +565,21 @@ const TaskManager = {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
+  },
+
+  formatDuration(minutes) {
+    if (minutes < 60) {
+      return `${minutes}分`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    if (mins === 0) {
+      return `${hours}時間`;
+    }
+
+    return `${hours}時間${mins}分`;
   },
 
   escapeHtml(text) {
