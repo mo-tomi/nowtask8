@@ -1,6 +1,7 @@
 const TaskEditor = {
   currentTaskId: null,
   currentTask: null,
+  MAX_SUBTASK_LEVEL: 5, // 仕様書 6.4.1: サブタスクの階層は5階層まで
 
   init() {
     this.setupEventListeners();
@@ -349,6 +350,15 @@ const TaskEditor = {
   addSubtaskInput() {
     if (!this.currentTask) return;
 
+    // サブタスクの階層チェック（現在は1階層のみ追加可能）
+    // 将来的に階層的なサブタスク追加UIを実装する際は、
+    // calculateSubtaskDepth()を使用して階層数をチェックする
+    const currentDepth = this.calculateSubtaskDepth(this.currentTask);
+    if (currentDepth >= this.MAX_SUBTASK_LEVEL) {
+      alert(`サブタスクは${this.MAX_SUBTASK_LEVEL}階層までです`);
+      return;
+    }
+
     const newSubtask = {
       id: `subtask_${Date.now()}`,
       name: '',
@@ -478,6 +488,29 @@ const TaskEditor = {
     return subtasks.reduce((total, subtask) => {
       return total + (subtask.duration || 0);
     }, 0);
+  },
+
+  /**
+   * サブタスクの階層数を計算（再帰的）
+   * メインタスク = 0, 直下のサブタスク = 1, その下 = 2, ...
+   * @param {Object} task - タスクまたはサブタスク
+   * @param {number} currentDepth - 現在の階層（デフォルト0）
+   * @returns {number} 最大階層数
+   */
+  calculateSubtaskDepth(task, currentDepth = 0) {
+    if (!task.subtasks || task.subtasks.length === 0) {
+      return currentDepth;
+    }
+
+    let maxDepth = currentDepth;
+    task.subtasks.forEach(subtask => {
+      const depth = this.calculateSubtaskDepth(subtask, currentDepth + 1);
+      if (depth > maxDepth) {
+        maxDepth = depth;
+      }
+    });
+
+    return maxDepth;
   },
 
   escapeHtml(text) {
