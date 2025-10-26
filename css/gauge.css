@@ -116,3 +116,50 @@
     font-size: 9px;
   }
 }
+
+/* 円形ゲージプルダウン */
+.circular-gauge-dropdown {
+  margin-top: 12px;
+}
+
+.circular-gauge-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.circular-gauge-toggle:hover {
+  background: var(--border-light);
+}
+
+.circular-gauge-toggle .toggle-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s;
+}
+
+.circular-gauge-content.expanded + .circular-gauge-toggle .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.circular-gauge-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  padding: 0;
+}
+
+.circular-gauge-content.expanded {
+  max-height: 500px;
+  padding: 16px 0;
+}

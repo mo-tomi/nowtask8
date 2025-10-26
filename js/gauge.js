@@ -4,8 +4,10 @@ const Gauge = {
   init() {
     this.renderDots();
     this.updateGauge();
+    this.updateCircularGauge();
     this.updateDateTime();
     this.startClock();
+    this.setupCircularGaugeToggle();
   },
 
   renderDots() {
@@ -167,9 +169,97 @@ const Gauge = {
     this.currentDate.setDate(this.currentDate.getDate() + offset);
     this.updateDateTime();
     this.updateGauge();
+    this.updateCircularGauge();
 
     if (window.TaskManager) {
       TaskManager.renderTasks();
+    }
+  },
+
+  setupCircularGaugeToggle() {
+    const toggle = document.getElementById('circularGaugeToggle');
+    const content = document.getElementById('circularGaugeContent');
+
+    if (!toggle || !content) return;
+
+    toggle.addEventListener('click', () => {
+      const isExpanded = content.classList.contains('expanded');
+
+      if (isExpanded) {
+        content.classList.remove('expanded');
+        toggle.querySelector('span').textContent = '詳細表示';
+      } else {
+        content.classList.add('expanded');
+        toggle.querySelector('span').textContent = '詳細を閉じる';
+        this.updateCircularGauge();
+      }
+    });
+  },
+
+  updateCircularGauge() {
+    const now = new Date();
+    const tasks = Storage.loadTasks();
+    const todayTasks = this.getTodayTasks(tasks);
+
+    const currentHour = now.getHours();
+    const currentMinutes = now.getMinutes();
+    const elapsedMinutes = currentHour * 60 + currentMinutes;
+
+    let scheduledMinutes = 0;
+    todayTasks.forEach(task => {
+      if (!task.completed) {
+        if (task.duration) {
+          scheduledMinutes += task.duration;
+        } else if (task.subtasks && task.subtasks.length > 0) {
+          const subtaskTotal = task.subtasks.reduce((sum, subtask) => {
+            return sum + (subtask.duration || 0);
+          }, 0);
+          scheduledMinutes += subtaskTotal;
+        }
+      }
+    });
+
+    const totalMinutes = 24 * 60;
+    const elapsedPercent = (elapsedMinutes / totalMinutes) * 100;
+    const scheduledPercent = (scheduledMinutes / totalMinutes) * 100;
+    const freeMinutes = totalMinutes - elapsedMinutes - scheduledMinutes;
+
+    const elapsedHours = (elapsedMinutes / 60).toFixed(1);
+    const freeHours = Math.max(0, freeMinutes / 60).toFixed(1);
+
+    const gaugeCurrentTime = document.getElementById('gaugeCurrentTime');
+    const gaugeElapsedTime = document.getElementById('gaugeElapsedTime');
+    const gaugeRemainingTime = document.getElementById('gaugeRemainingTime');
+
+    if (gaugeCurrentTime) {
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      gaugeCurrentTime.textContent = `${hours}:${minutes}`;
+    }
+
+    if (gaugeElapsedTime) {
+      gaugeElapsedTime.textContent = `${elapsedHours}h`;
+    }
+
+    if (gaugeRemainingTime) {
+      gaugeRemainingTime.textContent = `${freeHours}h`;
+    }
+
+    const circumference = 2 * Math.PI * 104;
+    const elapsedOffset = circumference - (circumference * elapsedPercent / 100);
+    const scheduledOffset = circumference - (circumference * scheduledPercent / 100);
+
+    const circleElapsed = document.getElementById('circleElapsed');
+    const circleScheduled = document.getElementById('circleScheduled');
+
+    if (circleElapsed) {
+      circleElapsed.style.strokeDasharray = circumference;
+      circleElapsed.style.strokeDashoffset = elapsedOffset;
+    }
+
+    if (circleScheduled) {
+      circleScheduled.style.strokeDasharray = circumference;
+      circleScheduled.style.strokeDashoffset = scheduledOffset;
     }
   }
 };

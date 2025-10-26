@@ -67,6 +67,54 @@
           <span>18:00</span>
           <span class="remaining-compact" id="remainingTime">残り 9.5h</span>
         </div>
+
+        <!-- 円形ゲージ（プルダウン） -->
+        <div class="circular-gauge-dropdown">
+          <button class="circular-gauge-toggle" id="circularGaugeToggle">
+            <span>詳細表示</span>
+            <svg class="toggle-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4,6 8,10 12,6"></polyline>
+            </svg>
+          </button>
+          <div class="circular-gauge-content" id="circularGaugeContent">
+            <div class="circular-gauge-container">
+              <div class="circular-gauge">
+                <svg width="240" height="240">
+                  <circle class="gauge-circle-bg" cx="120" cy="120" r="104"></circle>
+                  <circle class="gauge-circle-elapsed" cx="120" cy="120" r="104" id="circleElapsed"></circle>
+                  <circle class="gauge-circle-scheduled" cx="120" cy="120" r="104" id="circleScheduled"></circle>
+                </svg>
+                <div class="gauge-center-info">
+                  <div class="gauge-current-time" id="gaugeCurrentTime">20:48</div>
+                  <div class="gauge-time-row">
+                    <div class="gauge-time-item">
+                      <div class="gauge-elapsed-time" id="gaugeElapsedTime">20.8h</div>
+                      <div class="gauge-time-label">経過</div>
+                    </div>
+                    <div class="gauge-time-item">
+                      <div class="gauge-remaining-time" id="gaugeRemainingTime">3.2h</div>
+                      <div class="gauge-time-label">残り</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="gauge-legend">
+                <div class="gauge-legend-item">
+                  <div class="gauge-legend-dot elapsed"></div>
+                  <span>経過</span>
+                </div>
+                <div class="gauge-legend-item">
+                  <div class="gauge-legend-dot scheduled"></div>
+                  <span>予定</span>
+                </div>
+                <div class="gauge-legend-item">
+                  <div class="gauge-legend-dot free"></div>
+                  <span>空き</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- タスク一覧エリア -->
@@ -142,44 +190,6 @@
           <button class="period-btn active" data-period="today">今日</button>
           <button class="period-btn" data-period="week">今週</button>
           <button class="period-btn" data-period="month">今月</button>
-        </div>
-
-        <!-- 円形プログレスバー -->
-        <div class="circular-gauge-container">
-          <div class="circular-gauge">
-            <svg width="240" height="240">
-              <circle class="gauge-circle-bg" cx="120" cy="120" r="104"></circle>
-              <circle class="gauge-circle-elapsed" cx="120" cy="120" r="104" id="circleElapsed"></circle>
-              <circle class="gauge-circle-scheduled" cx="120" cy="120" r="104" id="circleScheduled"></circle>
-            </svg>
-            <div class="gauge-center-info">
-              <div class="gauge-current-time" id="gaugeCurrentTime">14:30</div>
-              <div class="gauge-time-row">
-                <div class="gauge-time-item">
-                  <div class="gauge-elapsed-time" id="gaugeElapsedTime">14.5h</div>
-                  <div class="gauge-time-label">経過</div>
-                </div>
-                <div class="gauge-time-item">
-                  <div class="gauge-remaining-time" id="gaugeRemainingTime">9.5h</div>
-                  <div class="gauge-time-label">残り</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="gauge-legend">
-            <div class="gauge-legend-item">
-              <div class="gauge-legend-dot elapsed"></div>
-              <span>経過</span>
-            </div>
-            <div class="gauge-legend-item">
-              <div class="gauge-legend-dot scheduled"></div>
-              <span>予定</span>
-            </div>
-            <div class="gauge-legend-item">
-              <div class="gauge-legend-dot free"></div>
-              <span>空き</span>
-            </div>
-          </div>
         </div>
 
         <!-- 統計データ -->
