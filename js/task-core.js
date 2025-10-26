@@ -6,7 +6,7 @@ const TaskManager = {
     search: '',
     priorities: [],
     tags: [],
-    statuses: ['incomplete']
+    statuses: [] // デフォルトは空（完了・未完了両方表示）
   },
 
   init() {
@@ -346,7 +346,7 @@ const TaskManager = {
       search: '',
       priorities: [],
       tags: [],
-      statuses: ['incomplete']
+      statuses: [] // デフォルトは空（完了・未完了両方表示）
     };
 
     this.populateCurrentFilters();
