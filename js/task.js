@@ -521,7 +521,7 @@ const TaskManager = {
           <div class="gauge-fill" style="width: ${usedPercent}%"></div>
         </div>
         <div class="gauge-text">
-          残り: ${remainingTime}分 （使用: ${subtasksDuration}分 / 全体: ${totalDuration}分）
+          残り: ${this.formatDuration(remainingTime)}
         </div>
       </div>
     `;
