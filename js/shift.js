@@ -168,11 +168,23 @@ const ShiftManager = {
     console.log('renderPresetButtons() called');
     console.log('this.presets:', this.presets);
 
+    // 現在選択中の日付のシフト一覧を取得
+    let appliedPresetIds = [];
+    if (this.selectedDate) {
+      const dateKey = this.formatDateKey(this.selectedDate);
+      const shifts = this.shifts[dateKey];
+      if (Array.isArray(shifts)) {
+        appliedPresetIds = shifts.map(s => s.presetId);
+      }
+    }
+
     container.innerHTML = this.presets.map(preset => {
       console.log('プリセット:', preset.name, preset.id);
+      const isApplied = appliedPresetIds.includes(preset.id);
       return `
-        <button class="shift-preset-btn ${this.currentPresetId === preset.id ? 'active' : ''}" data-preset-id="${preset.id}">
+        <button class="shift-preset-btn ${isApplied ? 'active' : ''}" data-preset-id="${preset.id}">
           ${this.escapeHtml(preset.name)}
+          ${isApplied ? '<span class="applied-mark">✓</span>' : ''}
         </button>
       `;
     }).join('');
@@ -194,12 +206,6 @@ const ShiftManager = {
     console.log('selectedDate:', this.selectedDate);
     console.log('isApplyingPreset:', this.isApplyingPreset);
 
-    // currentPresetIdを更新
-    this.currentPresetId = presetId;
-
-    // ボタンの選択状態を更新
-    this.updatePresetButtonState();
-
     // 選択された日付があればシフトを適用（ユーザー操作として）
     if (this.selectedDate && !this.isApplyingPreset) {
       console.log('applyPresetを呼び出します');
@@ -207,17 +213,6 @@ const ShiftManager = {
     } else {
       console.log('applyPresetをスキップ - 条件不一致');
     }
-  },
-
-  updatePresetButtonState() {
-    const buttons = document.querySelectorAll('.shift-preset-btn');
-    buttons.forEach(btn => {
-      if (btn.dataset.presetId === this.currentPresetId) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
   },
 
   selectDate(date) {
@@ -231,6 +226,9 @@ const ShiftManager = {
       const day = date.getDate();
       dateLabel.textContent = `${month}月${day}日`;
     }
+
+    // プリセットボタンの表示を更新（適用済みマークを反映）
+    this.renderPresetButtons();
   },
 
   applyPreset(presetId, autoMoveNext = false) {
@@ -244,26 +242,54 @@ const ShiftManager = {
 
     const dateKey = this.formatDateKey(this.selectedDate);
 
-    this.shifts[dateKey] = {
-      presetId: preset.id,
-      name: preset.name,
-      startTime: preset.startTime,
-      endTime: preset.endTime,
-      breakTime: preset.breakTime,
-      createTask: preset.createTask !== false, // プリセットのcreateTaskフラグを保持
-      date: dateKey
-    };
+    // 配列形式で管理（最大2個まで）
+    if (!Array.isArray(this.shifts[dateKey])) {
+      this.shifts[dateKey] = [];
+    }
+
+    // 同じプリセットが既に登録されているか確認
+    const existingIndex = this.shifts[dateKey].findIndex(s => s.presetId === preset.id);
+    if (existingIndex !== -1) {
+      // 既に登録済みの場合は削除
+      this.shifts[dateKey].splice(existingIndex, 1);
+      console.log('シフトを削除しました:', preset.name, dateKey);
+    } else {
+      // 最大2個までチェック
+      if (this.shifts[dateKey].length >= 2) {
+        alert('1日に登録できるシフトは2個までです');
+        return;
+      }
+
+      // 新しいシフトを追加
+      const newShift = {
+        presetId: preset.id,
+        name: preset.name,
+        startTime: preset.startTime,
+        endTime: preset.endTime,
+        breakTime: preset.breakTime,
+        createTask: preset.createTask !== false,
+        date: dateKey
+      };
+      this.shifts[dateKey].push(newShift);
+      console.log('シフトを登録しました:', preset.name, dateKey);
+    }
+
+    // 空配列の場合は削除
+    if (this.shifts[dateKey].length === 0) {
+      delete this.shifts[dateKey];
+    }
 
     Storage.saveShifts(this.shifts);
 
-    // すべてのシフトからタスクを生成（createTask=trueの場合のみ）
-    this.createTaskFromShift(this.shifts[dateKey], this.selectedDate);
+    // この日付のすべてのシフトタスクを再生成
+    this.regenerateShiftTasksForDate(this.selectedDate);
+
+    // プリセットボタンの表示を更新（適用済みマークを反映）
+    this.renderPresetButtons();
 
     if (typeof Calendar !== 'undefined') {
       Calendar.renderCalendar();
     }
-
-    console.log('シフトを登録しました:', preset.name, dateKey);
 
     // ユーザー操作の場合のみ次の日に自動移動
     if (autoMoveNext) {
@@ -284,21 +310,43 @@ const ShiftManager = {
     }
   },
 
-  createTaskFromShift(shift, date) {
+  regenerateShiftTasksForDate(date) {
     if (typeof TaskManager === 'undefined') return;
 
-    // 同じ日付の既存シフトタスクをすべて削除（重複防止）
+    // この日付の既存シフトタスクをすべて削除
     const dateString = date.toDateString();
     TaskManager.tasks = TaskManager.tasks.filter(task => {
       if (!task.tags || !task.tags.includes('シフト')) return true;
 
-      // 時刻ありシフトの場合
       if (task.startTime) {
         return new Date(task.startTime).toDateString() !== dateString;
       }
-      // 時刻なしシフトの場合
       return new Date(task.createdAt).toDateString() !== dateString;
     });
+
+    // この日付のすべてのシフトからタスクを生成
+    const dateKey = this.formatDateKey(date);
+    const shifts = this.shifts[dateKey];
+
+    if (Array.isArray(shifts)) {
+      shifts.forEach(shift => {
+        this.createTaskFromShift(shift, date);
+      });
+    }
+
+    Storage.saveTasks(TaskManager.tasks);
+
+    // UIを更新
+    if (typeof TaskManager.renderTasks === 'function') {
+      TaskManager.renderTasks();
+    }
+    if (typeof Gauge !== 'undefined' && typeof Gauge.updateGauge === 'function') {
+      Gauge.updateGauge();
+    }
+  },
+
+  createTaskFromShift(shift, date) {
+    if (typeof TaskManager === 'undefined') return;
 
     // createTask=falseの場合はタスクを作成しない（カレンダーにのみ表示）
     if (shift.createTask === false) {
@@ -337,22 +385,20 @@ const ShiftManager = {
 
     const task = TaskManager.createTask(shift.name, taskData);
     TaskManager.tasks.push(task);
-    Storage.saveTasks(TaskManager.tasks);
-
-    // UIを更新
-    if (typeof TaskManager.renderTasks === 'function') {
-      TaskManager.renderTasks();
-    }
-    if (typeof Gauge !== 'undefined' && typeof Gauge.updateGauge === 'function') {
-      Gauge.updateGauge();
-    }
 
     console.log('シフトからタスクを生成しました:', shift.name);
   },
 
   getShiftForDate(date) {
     const dateKey = this.formatDateKey(date);
-    return this.shifts[dateKey] || null;
+    const shifts = this.shifts[dateKey];
+    // 配列で返す（互換性のため、なければ空配列）
+    return Array.isArray(shifts) ? shifts : [];
+  },
+
+  getShiftsForDate(date) {
+    // getShiftForDateと同じ（配列を返す）
+    return this.getShiftForDate(date);
   },
 
   openPresetModal() {

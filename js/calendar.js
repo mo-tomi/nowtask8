@@ -130,13 +130,13 @@ const Calendar = {
     const hasTasksClass = taskCount > 0 ? 'has-tasks' : '';
     const dateStr = this.formatDateKey(date);
 
-    let shift = null;
+    let shifts = [];
     let hasShiftClass = '';
     let isShiftMode = false;
     if (typeof ShiftManager !== 'undefined') {
       isShiftMode = ShiftManager.shiftMode;
-      shift = ShiftManager.getShiftForDate(date);
-      if (shift) {
+      shifts = ShiftManager.getShiftForDate(date);
+      if (shifts.length > 0) {
         hasShiftClass = 'has-shift';
       }
     }
@@ -144,10 +144,17 @@ const Calendar = {
     // シフトモード中はシフト名のみ表示、それ以外はタスク数を表示
     let displayContent = '';
     if (isShiftMode) {
-      displayContent = shift ? `<div class="shift-label">${this.escapeHtml(shift.name)}</div>` : '';
+      // 複数シフトを表示（最大2個）
+      displayContent = shifts.length > 0
+        ? shifts.map(shift => `<div class="shift-label">${this.escapeHtml(shift.name)}</div>`).join('')
+        : '';
     } else {
+      // 通常モード：シフト名とタスク数を表示
+      const shiftLabels = shifts.length > 0
+        ? shifts.map(shift => `<div class="shift-label">${this.escapeHtml(shift.name)}</div>`).join('')
+        : '';
       displayContent = `
-        ${shift ? `<div class="shift-label">${this.escapeHtml(shift.name)}</div>` : ''}
+        ${shiftLabels}
         <div class="day-tasks">
           ${taskCount > 0 ? `<div class="task-count">${taskCount}</div>` : ''}
         </div>
