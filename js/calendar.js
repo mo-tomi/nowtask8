@@ -144,21 +144,23 @@ const Calendar = {
     // シフトモード中はシフト名のみ表示、それ以外はタスク数を表示
     let displayContent = '';
     if (isShiftMode) {
-      // 複数シフトを表示（最大2個）
+      // シフトモード：複数シフトを表示（最大2個）
       displayContent = shifts.length > 0
         ? shifts.map(shift => `<div class="shift-label">${this.escapeHtml(shift.name)}</div>`).join('')
         : '';
     } else {
-      // 通常モード：シフト名とタスク数を表示
-      const shiftLabels = shifts.length > 0
-        ? shifts.map(shift => `<div class="shift-label">${this.escapeHtml(shift.name)}</div>`).join('')
-        : '';
-      displayContent = `
-        ${shiftLabels}
-        <div class="day-tasks">
-          ${taskCount > 0 ? `<div class="task-count">${taskCount}</div>` : ''}
-        </div>
-      `;
+      // 通常モード：シフトがある場合はシフト名のみ、ない場合はタスク数を表示
+      if (shifts.length > 0) {
+        // シフトがある日はシフト名のみ表示
+        displayContent = shifts.map(shift => `<div class="shift-label">${this.escapeHtml(shift.name)}</div>`).join('');
+      } else {
+        // シフトがない日はタスク数を表示
+        displayContent = `
+          <div class="day-tasks">
+            ${taskCount > 0 ? `<div class="task-count">${taskCount}</div>` : ''}
+          </div>
+        `;
+      }
     }
 
     return `
