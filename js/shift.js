@@ -285,22 +285,18 @@ const ShiftManager = {
   createTaskFromShift(shift, date) {
     if (typeof TaskManager === 'undefined') return;
 
-    // 既存のシフトタスクを検索（時刻あり・なし両方に対応）
-    const existingTask = TaskManager.tasks.find(task => {
-      if (!task.tags || !task.tags.includes('シフト')) return false;
-      if (task.name !== shift.name) return false;
+    // 同じ日付の既存シフトタスクをすべて削除（重複防止）
+    const dateString = date.toDateString();
+    TaskManager.tasks = TaskManager.tasks.filter(task => {
+      if (!task.tags || !task.tags.includes('シフト')) return true;
 
-      // 時刻ありシフト
+      // 時刻ありシフトの場合
       if (task.startTime) {
-        return new Date(task.startTime).toDateString() === date.toDateString();
+        return new Date(task.startTime).toDateString() !== dateString;
       }
-      // 時刻なしシフト
-      return new Date(task.createdAt).toDateString() === date.toDateString();
+      // 時刻なしシフトの場合
+      return new Date(task.createdAt).toDateString() !== dateString;
     });
-
-    if (existingTask) {
-      return;
-    }
 
     let taskData = {
       tags: ['シフト']
@@ -334,6 +330,14 @@ const ShiftManager = {
     const task = TaskManager.createTask(shift.name, taskData);
     TaskManager.tasks.push(task);
     Storage.saveTasks(TaskManager.tasks);
+
+    // UIを更新
+    if (typeof TaskManager.renderTasks === 'function') {
+      TaskManager.renderTasks();
+    }
+    if (typeof Gauge !== 'undefined' && typeof Gauge.updateGauge === 'function') {
+      Gauge.updateGauge();
+    }
 
     console.log('シフトからタスクを生成しました:', shift.name);
   },
