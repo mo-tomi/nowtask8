@@ -40,7 +40,8 @@ const App = {
     }
 
     if (quickInput) {
-      quickInput.addEventListener('keypress', (e) => {
+      // keypressではなくkeydownを使用（スマホ対応）
+      quickInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           TaskManager.addTaskFromQuickInput();
