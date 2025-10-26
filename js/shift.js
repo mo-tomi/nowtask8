@@ -9,12 +9,12 @@ const ShiftManager = {
   isApplyingPreset: false,
 
   defaultPresets: [
-    { name: '夜勤', startTime: '16:00', endTime: '09:00', breakTime: 60 },
-    { name: '明け', startTime: null, endTime: null, breakTime: 0 },
-    { name: '休み', startTime: null, endTime: null, breakTime: 0 },
-    { name: '予定', startTime: null, endTime: null, breakTime: 0 },
-    { name: '研修', startTime: '09:00', endTime: '17:00', breakTime: 60 },
-    { name: '仕事', startTime: '09:00', endTime: '18:00', breakTime: 60 }
+    { name: '夜勤', startTime: '16:00', endTime: '09:00', breakTime: 60, createTask: true },
+    { name: '明け', startTime: null, endTime: null, breakTime: 0, createTask: false },
+    { name: '休み', startTime: null, endTime: null, breakTime: 0, createTask: false },
+    { name: '予定', startTime: null, endTime: null, breakTime: 0, createTask: false },
+    { name: '研修', startTime: '09:00', endTime: '17:00', breakTime: 60, createTask: true },
+    { name: '仕事', startTime: '09:00', endTime: '18:00', breakTime: 60, createTask: true }
   ],
 
   init() {
@@ -43,6 +43,7 @@ const ShiftManager = {
         preset.startTime,
         preset.endTime,
         preset.breakTime,
+        preset.createTask,
         index
       );
       this.presets.push(newPreset);
@@ -249,12 +250,13 @@ const ShiftManager = {
       startTime: preset.startTime,
       endTime: preset.endTime,
       breakTime: preset.breakTime,
+      createTask: preset.createTask !== false, // プリセットのcreateTaskフラグを保持
       date: dateKey
     };
 
     Storage.saveShifts(this.shifts);
 
-    // すべてのシフトからタスクを生成（時刻なしシフトも含む）
+    // すべてのシフトからタスクを生成（createTask=trueの場合のみ）
     this.createTaskFromShift(this.shifts[dateKey], this.selectedDate);
 
     if (typeof Calendar !== 'undefined') {
@@ -297,6 +299,12 @@ const ShiftManager = {
       // 時刻なしシフトの場合
       return new Date(task.createdAt).toDateString() !== dateString;
     });
+
+    // createTask=falseの場合はタスクを作成しない（カレンダーにのみ表示）
+    if (shift.createTask === false) {
+      console.log('createTask=falseのため、タスクを生成しません:', shift.name);
+      return;
+    }
 
     let taskData = {
       tags: ['シフト']
@@ -429,11 +437,13 @@ const ShiftManager = {
     const startTimeInput = document.getElementById('editPresetStartTime');
     const endTimeInput = document.getElementById('editPresetEndTime');
     const breakTimeInput = document.getElementById('editPresetBreakTime');
+    const createTaskInput = document.getElementById('editPresetCreateTask');
 
     if (nameInput) nameInput.value = preset.name;
     if (startTimeInput) startTimeInput.value = preset.startTime || '';
     if (endTimeInput) endTimeInput.value = preset.endTime || '';
     if (breakTimeInput) breakTimeInput.value = preset.breakTime || '';
+    if (createTaskInput) createTaskInput.checked = preset.createTask !== false;
   },
 
   clearPresetForm() {
@@ -441,11 +451,13 @@ const ShiftManager = {
     const startTimeInput = document.getElementById('editPresetStartTime');
     const endTimeInput = document.getElementById('editPresetEndTime');
     const breakTimeInput = document.getElementById('editPresetBreakTime');
+    const createTaskInput = document.getElementById('editPresetCreateTask');
 
     if (nameInput) nameInput.value = '';
     if (startTimeInput) startTimeInput.value = '';
     if (endTimeInput) endTimeInput.value = '';
     if (breakTimeInput) breakTimeInput.value = '';
+    if (createTaskInput) createTaskInput.checked = true; // デフォルトはtrue
   },
 
   savePreset() {
@@ -453,6 +465,7 @@ const ShiftManager = {
     const startTimeInput = document.getElementById('editPresetStartTime');
     const endTimeInput = document.getElementById('editPresetEndTime');
     const breakTimeInput = document.getElementById('editPresetBreakTime');
+    const createTaskInput = document.getElementById('editPresetCreateTask');
 
     if (!nameInput.value.trim()) {
       alert('プリセット名を入力してください');
@@ -466,6 +479,7 @@ const ShiftManager = {
         preset.startTime = startTimeInput.value || null;
         preset.endTime = endTimeInput.value || null;
         preset.breakTime = parseInt(breakTimeInput.value) || 0;
+        preset.createTask = createTaskInput ? createTaskInput.checked : true;
         preset.updatedAt = new Date().toISOString();
       }
     } else {
@@ -473,7 +487,8 @@ const ShiftManager = {
         nameInput.value.trim(),
         startTimeInput.value || null,
         endTimeInput.value || null,
-        parseInt(breakTimeInput.value) || 0
+        parseInt(breakTimeInput.value) || 0,
+        createTaskInput ? createTaskInput.checked : true
       );
       this.presets.push(newPreset);
     }
@@ -499,13 +514,14 @@ const ShiftManager = {
     }
   },
 
-  createPreset(name, startTime, endTime, breakTime, index = 0) {
+  createPreset(name, startTime, endTime, breakTime, createTask = true, index = 0) {
     return {
       id: `preset_${Date.now()}_${index}`,
       name: name,
       startTime: startTime,
       endTime: endTime,
       breakTime: breakTime,
+      createTask: createTask !== false, // デフォルトtrue
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
