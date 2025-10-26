@@ -440,6 +440,12 @@ const TaskManager = {
       ? `<div class="task-time">${timeLabel}</div>`
       : '';
 
+    // 実効時間を取得（メインタスクの時間 or サブタスクの合計）
+    const effectiveDuration = this.getEffectiveDuration(task);
+    const durationBadge = effectiveDuration > 0
+      ? `<span class="task-duration-badge">${effectiveDuration}分</span>`
+      : '';
+
     const completedClass = task.completed ? 'completed' : '';
     const taskNameClass = task.completed ? 'task-name completed' : 'task-name';
 
@@ -462,6 +468,7 @@ const TaskManager = {
               <div class="task-header">
                 ${priorityMarkHtml}
                 <div class="${taskNameClass}">${this.escapeHtml(task.name)}</div>
+                ${durationBadge}
                 <button class="task-menu" data-task-id="${task.id}">⋮</button>
               </div>
               ${tagsHtml}
@@ -474,16 +481,37 @@ const TaskManager = {
     `;
   },
 
+  getEffectiveDuration(task) {
+    // メインタスクに時間設定がある場合はそれを使用
+    if (task.duration) {
+      return task.duration;
+    }
+
+    // メインタスクに時間設定がない場合、サブタスクの合計を返す
+    if (task.subtasks && task.subtasks.length > 0) {
+      return task.subtasks.reduce((sum, subtask) => {
+        return sum + (subtask.duration || 0);
+      }, 0);
+    }
+
+    return 0;
+  },
+
   renderTaskGauge(task) {
-    if (!task.duration || !task.subtasks || task.subtasks.length === 0) {
+    if (!task.subtasks || task.subtasks.length === 0) {
       return '';
     }
 
-    const totalDuration = task.duration;
     const subtasksDuration = task.subtasks.reduce((sum, subtask) => {
       return sum + (subtask.duration || 0);
     }, 0);
 
+    // サブタスクに時間が設定されていない場合は表示しない
+    if (subtasksDuration === 0) {
+      return '';
+    }
+
+    const totalDuration = task.duration || subtasksDuration;
     const usedPercent = Math.min((subtasksDuration / totalDuration) * 100, 100);
     const remainingTime = totalDuration - subtasksDuration;
 

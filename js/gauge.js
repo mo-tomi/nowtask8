@@ -73,8 +73,18 @@ const Gauge = {
     let scheduledMinutes = 0;
 
     todayTasks.forEach(task => {
-      if (!task.completed && task.duration) {
-        scheduledMinutes += task.duration;
+      if (!task.completed) {
+        // メインタスクに時間がある場合はそれを使用
+        if (task.duration) {
+          scheduledMinutes += task.duration;
+        }
+        // メインタスクに時間がない場合、サブタスクの合計を使用
+        else if (task.subtasks && task.subtasks.length > 0) {
+          const subtaskTotal = task.subtasks.reduce((sum, subtask) => {
+            return sum + (subtask.duration || 0);
+          }, 0);
+          scheduledMinutes += subtaskTotal;
+        }
       }
     });
 

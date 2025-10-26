@@ -230,6 +230,18 @@
   color: var(--text-tertiary);
 }
 
+/* タスク時間バッジ */
+.task-duration-badge {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
 /* タスクメニューボタン */
 .task-menu {
   flex-shrink: 0;
