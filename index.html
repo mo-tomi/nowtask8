@@ -71,7 +71,6 @@
         <!-- 円形ゲージ（プルダウン） -->
         <div class="circular-gauge-dropdown">
           <button class="circular-gauge-toggle" id="circularGaugeToggle">
-            <span>詳細表示</span>
             <svg class="toggle-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="4,6 8,10 12,6"></polyline>
             </svg>
@@ -472,8 +471,25 @@
                 <input type="datetime-local" class="form-input" id="editEndTime">
               </div>
               <div class="time-input-group">
-                <label class="time-label">所要時間（分）</label>
-                <input type="number" class="form-input" id="editDuration" min="0" placeholder="例: 60">
+                <label class="time-label">所要時間</label>
+                <select class="form-input" id="editDuration">
+                  <option value="">時間なし</option>
+                  <option value="15">15分</option>
+                  <option value="30">30分</option>
+                  <option value="45">45分</option>
+                  <option value="60">1時間</option>
+                  <option value="90">1時間30分</option>
+                  <option value="120">2時間</option>
+                  <option value="150">2時間30分</option>
+                  <option value="180">3時間</option>
+                  <option value="210">3時間30分</option>
+                  <option value="240">4時間</option>
+                  <option value="270">4時間30分</option>
+                  <option value="300">5時間</option>
+                  <option value="360">6時間</option>
+                  <option value="420">7時間</option>
+                  <option value="480">8時間</option>
+                </select>
               </div>
             </div>
           </div>

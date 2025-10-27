@@ -142,8 +142,8 @@ const TaskEditor = {
 
     // 所要時間
     const durationInput = document.getElementById('editDuration');
-    if (durationInput && task.duration) {
-      durationInput.value = task.duration;
+    if (durationInput) {
+      durationInput.value = task.duration ? task.duration.toString() : '';
     }
 
     // 優先度
@@ -163,6 +163,12 @@ const TaskEditor = {
   },
 
   clearForm(defaultDate) {
+    // 新規タスク用のcurrentTaskオブジェクトを初期化
+    this.currentTask = {
+      tags: [],
+      subtasks: []
+    };
+
     // タスク名
     const taskNameInput = document.getElementById('editTaskName');
     if (taskNameInput) {
@@ -236,7 +242,17 @@ const TaskEditor = {
     const diffMinutes = Math.round((end - start) / 1000 / 60);
 
     if (diffMinutes > 0) {
-      durationInput.value = diffMinutes;
+      // 計算された時間に最も近いプルダウンの選択肢を探す
+      const options = Array.from(durationInput.options);
+      let closestOption = options.find(opt => opt.value && parseInt(opt.value) >= diffMinutes);
+
+      if (closestOption) {
+        durationInput.value = closestOption.value;
+      } else {
+        // 最大値より大きい場合は最大値を選択
+        const maxOption = options[options.length - 1];
+        durationInput.value = maxOption.value;
+      }
     }
   },
 
