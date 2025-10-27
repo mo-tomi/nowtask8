@@ -40,11 +40,22 @@ const App = {
       });
     }
 
+    // デバッグ用の表示関数
+    const showDebug = (message) => {
+      console.log(message);
+      // 画面上部に一時的にメッセージを表示（デバッグ用）
+      const debug = document.createElement('div');
+      debug.textContent = message;
+      debug.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:8px 16px;border-radius:4px;z-index:9999;font-size:12px;';
+      document.body.appendChild(debug);
+      setTimeout(() => debug.remove(), 2000);
+    };
+
     // フォーム送信イベントをハンドリング（スマホのEnterキー対応の主要な方法）
     if (quickInputForm) {
       quickInputForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        console.log('フォーム送信イベント発火');
+        showDebug('フォーム送信イベント発火');
         TaskManager.addTaskFromQuickInput();
       });
     }
@@ -55,7 +66,7 @@ const App = {
       quickInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.keyCode === 13) {
           e.preventDefault();
-          console.log('keydown Enter検出');
+          showDebug('keydown Enter検出');
           TaskManager.addTaskFromQuickInput();
         }
       });
@@ -64,7 +75,7 @@ const App = {
       quickInput.addEventListener('keyup', (e) => {
         if (e.key === 'Enter' || e.keyCode === 13) {
           e.preventDefault();
-          console.log('keyup Enter検出');
+          showDebug('keyup Enter検出');
           TaskManager.addTaskFromQuickInput();
         }
       });
@@ -72,7 +83,7 @@ const App = {
       // change イベント（一部のスマホで有効）
       quickInput.addEventListener('change', () => {
         if (quickInput.value.trim()) {
-          console.log('change イベント発火');
+          showDebug('change イベント発火');
           TaskManager.addTaskFromQuickInput();
         }
       });
