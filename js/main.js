@@ -44,15 +44,35 @@ const App = {
     if (quickInputForm) {
       quickInputForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        console.log('フォーム送信イベント発火');
         TaskManager.addTaskFromQuickInput();
       });
     }
 
     // 追加のキーボードイベント対応（バックアップ）
     if (quickInput) {
+      // keydown イベント
       quickInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || e.keyCode === 13) {
           e.preventDefault();
+          console.log('keydown Enter検出');
+          TaskManager.addTaskFromQuickInput();
+        }
+      });
+
+      // keyup イベント（さらなるバックアップ）
+      quickInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+          e.preventDefault();
+          console.log('keyup Enter検出');
+          TaskManager.addTaskFromQuickInput();
+        }
+      });
+
+      // change イベント（一部のスマホで有効）
+      quickInput.addEventListener('change', () => {
+        if (quickInput.value.trim()) {
+          console.log('change イベント発火');
           TaskManager.addTaskFromQuickInput();
         }
       });

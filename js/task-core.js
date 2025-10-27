@@ -2,6 +2,7 @@
 
 const TaskManager = {
   tasks: [],
+  lastAddTime: 0, // 重複追加防止用
   filters: {
     search: '',
     priorities: [],
@@ -75,11 +76,22 @@ const TaskManager = {
   },
 
   addTaskFromQuickInput() {
+    // 重複実行防止（300ms以内の連続実行を防ぐ）
+    const now = Date.now();
+    if (now - this.lastAddTime < 300) {
+      console.log('重複実行を防止しました');
+      return;
+    }
+    this.lastAddTime = now;
+
     const input = document.getElementById('quickInput');
     const timeSelect = document.getElementById('timeSelect');
     const taskName = input.value.trim();
 
-    if (!taskName) return;
+    if (!taskName) {
+      console.log('タスク名が空のため追加をキャンセル');
+      return;
+    }
 
     const options = {};
 
@@ -96,6 +108,9 @@ const TaskManager = {
     if (timeSelect) {
       timeSelect.value = '';
     }
+
+    // キーボードを閉じる（スマホ対応）
+    input.blur();
 
     this.renderTasks();
     Gauge.updateGauge();
