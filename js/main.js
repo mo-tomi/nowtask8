@@ -31,6 +31,7 @@ const App = {
 
   setupEventListeners() {
     const viewToggleBtn = document.getElementById('viewToggleBtn');
+    const quickInputForm = document.getElementById('quickInputForm');
     const quickInput = document.getElementById('quickInput');
 
     if (viewToggleBtn) {
@@ -39,8 +40,16 @@ const App = {
       });
     }
 
+    // フォーム送信イベントをハンドリング（スマホのEnterキー対応の主要な方法）
+    if (quickInputForm) {
+      quickInputForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        TaskManager.addTaskFromQuickInput();
+      });
+    }
+
+    // 追加のキーボードイベント対応（バックアップ）
     if (quickInput) {
-      // keypressではなくkeydownを使用（スマホ対応）
       quickInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
