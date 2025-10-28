@@ -292,6 +292,7 @@ Object.assign(TaskManager, {
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
+          <span class="add-subtask-label">サブタスクを追加</span>
         </button>
         <div class="subtask-quick-input" data-task-id="${taskId}" style="display: none;">
           <input type="text" class="subtask-quick-input-field" placeholder="サブタスク名を入力" />
