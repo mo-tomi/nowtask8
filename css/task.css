@@ -605,6 +605,36 @@
   background: var(--border-medium);
 }
 
+.detail-add-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.detail-add-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.detail-add-btn:active {
+  transform: scale(0.95);
+}
+
+.detail-add-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--bg-primary);
+}
+
 /* タスクなし表示 */
 .empty-state {
   text-align: center;

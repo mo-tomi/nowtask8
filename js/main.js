@@ -36,10 +36,19 @@ const App = {
     const viewToggleBtn = document.getElementById('viewToggleBtn');
     const quickInputForm = document.getElementById('quickInputForm');
     const quickInput = document.getElementById('quickInput');
+    const detailAddBtn = document.getElementById('detailAddBtn');
 
     if (viewToggleBtn) {
       viewToggleBtn.addEventListener('click', () => {
         this.toggleView();
+      });
+    }
+
+    // 詳細追加ボタン
+    if (detailAddBtn) {
+      detailAddBtn.addEventListener('click', () => {
+        const currentDate = Gauge.currentDate;
+        TaskManager.showTaskMenu(null, currentDate);
       });
     }
 
