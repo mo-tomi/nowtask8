@@ -15,8 +15,6 @@ const TaskEditor = {
     const addSubtaskBtn = document.getElementById('addSubtaskBtn');
     const tagInput = document.getElementById('tagInput');
     const priorityBtns = document.querySelectorAll('.priority-btn');
-    const applyTemplateBtn = document.getElementById('applyTemplateBtn');
-    const applyPatternBtn = document.getElementById('applyPatternBtn');
 
     // 時間入力の自動計算
     const startTimeInput = document.getElementById('editStartTime');
@@ -91,20 +89,6 @@ const TaskEditor = {
         btn.classList.add('active');
       });
     });
-
-    // テンプレート適用ボタン
-    if (applyTemplateBtn) {
-      applyTemplateBtn.addEventListener('click', () => {
-        this.showTemplateSelectionModal();
-      });
-    }
-
-    // パターン適用ボタン
-    if (applyPatternBtn) {
-      applyPatternBtn.addEventListener('click', () => {
-        this.showPatternSelectionModal();
-      });
-    }
   },
 
   openModal(taskId, defaultDate) {
@@ -125,6 +109,34 @@ const TaskEditor = {
     const modal = document.getElementById('taskEditModal');
     if (modal) {
       modal.style.display = 'flex';
+    }
+
+    // モーダルが開いた後、ボタンのイベントリスナーを設定
+    this.setupQuickActionButtons();
+  },
+
+  setupQuickActionButtons() {
+    const applyTemplateBtn = document.getElementById('applyTemplateBtn');
+    const applyPatternBtn = document.getElementById('applyPatternBtn');
+
+    if (applyTemplateBtn) {
+      // 既存のイベントリスナーを削除して再設定
+      const newTemplateBtn = applyTemplateBtn.cloneNode(true);
+      applyTemplateBtn.parentNode.replaceChild(newTemplateBtn, applyTemplateBtn);
+
+      newTemplateBtn.addEventListener('click', () => {
+        this.showTemplateSelectionModal();
+      });
+    }
+
+    if (applyPatternBtn) {
+      // 既存のイベントリスナーを削除して再設定
+      const newPatternBtn = applyPatternBtn.cloneNode(true);
+      applyPatternBtn.parentNode.replaceChild(newPatternBtn, applyPatternBtn);
+
+      newPatternBtn.addEventListener('click', () => {
+        this.showPatternSelectionModal();
+      });
     }
   },
 
