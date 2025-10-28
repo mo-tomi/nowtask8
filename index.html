@@ -746,6 +746,26 @@
     </div>
   </div>
 
+  <!-- テンプレートクイック追加モーダル -->
+  <div class="modal-overlay template-quick-add-modal" id="templateQuickAddModal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">テンプレートから追加</h2>
+        <button class="modal-close-btn" id="templateQuickAddCloseBtn">×</button>
+      </div>
+
+      <!-- カテゴリータブ -->
+      <div class="template-quick-tabs" id="templateQuickTabs">
+        <!-- JSでタブを生成 -->
+      </div>
+
+      <!-- テンプレートカード -->
+      <div class="template-quick-content" id="templateQuickContent">
+        <!-- JSでカードを生成 -->
+      </div>
+    </div>
+  </div>
+
   <!-- テンプレート編集モーダル -->
   <div class="modal-overlay" id="templateEditModal" style="display: none;">
     <div class="modal-content modal-small">
@@ -838,6 +858,7 @@
   <script src="js/task-edit.js"></script>
   <script src="js/subtask-detail.js"></script>
   <script src="js/template.js"></script>
+  <script src="js/template-quick-add.js"></script>
   <script src="js/routine.js"></script>
   <script src="js/shift.js"></script>
   <script src="js/calendar.js"></script>

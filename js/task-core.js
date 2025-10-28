@@ -28,9 +28,56 @@ const TaskManager = {
     const clearFilterBtn = document.getElementById('clearFilterBtn');
 
     if (addTaskBtn) {
-      addTaskBtn.addEventListener('click', () => {
-        const currentDate = Gauge.currentDate;
-        this.showTaskMenu(null, currentDate);
+      let longPressTimer = null;
+      let isLongPress = false;
+
+      // タッチ/マウス開始
+      const startLongPress = () => {
+        isLongPress = false;
+        longPressTimer = setTimeout(() => {
+          isLongPress = true;
+          // 長押し検出：テンプレートクイック追加を開く
+          if (typeof TemplateQuickAdd !== 'undefined') {
+            TemplateQuickAdd.openModal();
+          }
+        }, 500); // 500msで長押し判定
+      };
+
+      // タッチ/マウス終了
+      const endLongPress = () => {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+        }
+        if (!isLongPress) {
+          // 通常のタップ：タスク編集モーダルを開く
+          const currentDate = Gauge.currentDate;
+          this.showTaskMenu(null, currentDate);
+        }
+        isLongPress = false;
+      };
+
+      // キャンセル
+      const cancelLongPress = () => {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+        }
+        isLongPress = false;
+      };
+
+      // イベントリスナー
+      addTaskBtn.addEventListener('mousedown', startLongPress);
+      addTaskBtn.addEventListener('mouseup', endLongPress);
+      addTaskBtn.addEventListener('mouseleave', cancelLongPress);
+      addTaskBtn.addEventListener('touchstart', startLongPress);
+      addTaskBtn.addEventListener('touchend', endLongPress);
+      addTaskBtn.addEventListener('touchcancel', cancelLongPress);
+
+      // クリックイベントを防ぐ（長押し時）
+      addTaskBtn.addEventListener('click', (e) => {
+        if (isLongPress) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
       });
     }
 
