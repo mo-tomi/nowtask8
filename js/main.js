@@ -10,6 +10,7 @@ const App = {
     SubtaskDetail.init();
     TemplateManager.init();
     TemplateQuickAdd.init();
+    MultiDayPatternManager.init();
     Calendar.init();
     RoutineManager.init();
     ShiftManager.init();

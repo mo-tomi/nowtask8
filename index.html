@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="css/calendar.css">
   <link rel="stylesheet" href="css/stats.css">
   <link rel="stylesheet" href="css/template.css">
+  <link rel="stylesheet" href="css/multiday-pattern.css">
 </head>
 <body>
   <div class="app-container">
@@ -849,6 +850,67 @@
     </div>
   </div>
 
+  <!-- 複数日パターン管理モーダル -->
+  <div class="modal-overlay" id="multiDayPatternModal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">複数日パターン管理</h2>
+        <button class="modal-close-btn" id="multiDayPatternCloseBtn">×</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- パターン一覧 -->
+        <div class="pattern-list" id="multiDayPatternList">
+          <!-- JSでパターンを生成 -->
+        </div>
+
+        <!-- パターン追加ボタン -->
+        <button class="add-pattern-btn" id="addMultiDayPatternBtn">+ パターンを追加</button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- パターン編集モーダル -->
+  <div class="modal-overlay" id="multiDayPatternEditModal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">パターン編集</h2>
+        <button class="modal-close-btn" id="multiDayPatternEditCloseBtn">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="multiDayPatternEditForm">
+
+          <!-- パターン名 -->
+          <div class="pattern-form-group">
+            <label class="pattern-form-label">パターン名</label>
+            <input type="text" class="pattern-form-input" id="editPatternName" placeholder="例: 明け→翌夜勤" required>
+          </div>
+
+          <!-- 日数 -->
+          <div class="pattern-form-group">
+            <label class="pattern-form-label">日数</label>
+            <input type="number" class="pattern-form-input" id="editPatternDays" min="1" max="7" value="2" required>
+          </div>
+
+          <!-- 日別パターン -->
+          <div class="pattern-form-group">
+            <label class="pattern-form-label">日別タスク設定</label>
+            <div class="day-patterns-container" id="dayPatternsContainer">
+              <!-- JSで日別パターンを生成 -->
+            </div>
+          </div>
+
+          <!-- ボタン -->
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="deleteMultiDayPatternBtn">削除</button>
+            <button type="submit" class="btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- JavaScript読み込み -->
   <script src="js/storage.js"></script>
   <script src="js/gauge.js"></script>
@@ -859,6 +921,7 @@
   <script src="js/subtask-detail.js"></script>
   <script src="js/template.js"></script>
   <script src="js/template-quick-add.js"></script>
+  <script src="js/multiday-pattern.js"></script>
   <script src="js/routine.js"></script>
   <script src="js/shift.js"></script>
   <script src="js/calendar.js"></script>

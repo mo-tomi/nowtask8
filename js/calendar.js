@@ -249,11 +249,27 @@ const Calendar = {
     // その日のタスクを取得
     const tasks = this.getTasksForDate(date);
 
+    // パターン適用ボタンを追加
+    let patternButtonHtml = '';
+    if (typeof MultiDayPatternManager !== 'undefined') {
+      patternButtonHtml = `
+        <button class="apply-pattern-btn" id="applyPatternBtn" title="複数日パターンを適用">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          パターン適用
+        </button>
+      `;
+    }
+
     // タスク一覧を表示
     if (tasks.length > 0) {
-      selectedDayTaskList.innerHTML = tasks.map(task => this.renderTaskForDay(task)).join('');
+      selectedDayTaskList.innerHTML = patternButtonHtml + tasks.map(task => this.renderTaskForDay(task)).join('');
     } else {
-      selectedDayTaskList.innerHTML = '<div class="empty-state-text">この日はタスクがありません</div>';
+      selectedDayTaskList.innerHTML = patternButtonHtml + '<div class="empty-state-text">この日はタスクがありません</div>';
     }
 
     // 表示状態を更新
@@ -265,6 +281,7 @@ const Calendar = {
     // イベントリスナーを設定
     this.setupTaskEventListeners();
     this.setupDragAndDrop();
+    this.setupPatternButton(date);
   },
 
   renderTaskForDay(task) {
@@ -513,5 +530,119 @@ const Calendar = {
     if (typeof TaskManager !== 'undefined') TaskManager.renderTasks();
 
     console.log('タスクを複製しました:', newTask.name);
+  },
+
+  setupPatternButton(date) {
+    const applyPatternBtn = document.getElementById('applyPatternBtn');
+    if (!applyPatternBtn) return;
+
+    applyPatternBtn.addEventListener('click', () => {
+      this.showPatternSelectionModal(date);
+    });
+  },
+
+  showPatternSelectionModal(startDate) {
+    if (typeof MultiDayPatternManager === 'undefined' || !MultiDayPatternManager.patterns) {
+      alert('パターンが見つかりません');
+      return;
+    }
+
+    const patterns = MultiDayPatternManager.patterns;
+    if (patterns.length === 0) {
+      alert('パターンがありません。先にパターンを作成してください。');
+      return;
+    }
+
+    // モーダルを作成
+    const modalHtml = `
+      <div class="modal" id="patternSelectionModal" style="display: flex;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">パターンを選択</h2>
+            <button class="modal-close-btn" id="patternSelectionCloseBtn">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="pattern-selection-list">
+              ${patterns.map(pattern => `
+                <div class="pattern-selection-item" data-pattern-id="${pattern.id}">
+                  <div class="pattern-item-header">
+                    <div class="pattern-item-name">${this.escapeHtml(pattern.name)}</div>
+                    <div class="pattern-item-days">${pattern.days}日間</div>
+                  </div>
+                  <div class="pattern-item-summary">
+                    ${pattern.dayPatterns.map((day, idx) =>
+                      `<span class="pattern-day-label">Day${idx + 1}: ${this.escapeHtml(day.label || '')} (${day.tasks.length}タスク)</span>`
+                    ).join(' ')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // モーダルを挿入
+    const existingModal = document.getElementById('patternSelectionModal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // イベントリスナーを設定
+    const modal = document.getElementById('patternSelectionModal');
+    const closeBtn = document.getElementById('patternSelectionCloseBtn');
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        modal.remove();
+      });
+    }
+
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+
+    // パターン選択
+    const patternItems = document.querySelectorAll('.pattern-selection-item');
+    patternItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const patternId = item.dataset.patternId;
+        this.applyPattern(patternId, startDate);
+        modal.remove();
+      });
+    });
+  },
+
+  applyPattern(patternId, startDate) {
+    if (typeof MultiDayPatternManager === 'undefined') return;
+
+    const dateStr = this.formatDateKey(startDate);
+    const tasksToAdd = MultiDayPatternManager.applyPatternToDate(patternId, dateStr);
+
+    if (!tasksToAdd || tasksToAdd.length === 0) {
+      alert('パターンの適用に失敗しました');
+      return;
+    }
+
+    // タスクを追加
+    TaskManager.tasks.push(...tasksToAdd);
+    Storage.saveTasks(TaskManager.tasks);
+
+    // 表示を更新
+    this.renderCalendar();
+    if (this.selectedDate) {
+      this.showSelectedDayTasks(this.selectedDate);
+    }
+    if (typeof Gauge !== 'undefined') Gauge.updateGauge();
+    if (typeof TaskManager !== 'undefined') TaskManager.renderTasks();
+
+    const pattern = MultiDayPatternManager.patterns.find(p => p.id === patternId);
+    alert(`パターン「${pattern.name}」を適用しました\n${tasksToAdd.length}個のタスクを追加しました`);
+    console.log('パターンを適用しました:', pattern.name, tasksToAdd);
   }
 };

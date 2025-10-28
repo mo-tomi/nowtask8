@@ -530,3 +530,54 @@
   border-color: var(--text-primary);
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 }
+
+/* パターン適用ボタン */
+.apply-pattern-btn {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.apply-pattern-btn:hover {
+  background: var(--border-light);
+  border-color: var(--text-secondary);
+}
+
+.apply-pattern-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--text-primary);
+}
+
+/* パターン選択モーダル */
+.pattern-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pattern-selection-item {
+  padding: 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pattern-selection-item:hover {
+  background: var(--border-light);
+  border-color: var(--text-secondary);
+}
