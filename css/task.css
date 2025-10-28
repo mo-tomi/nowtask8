@@ -302,7 +302,7 @@
   transition: all 0.2s;
   margin-top: 2px;
   padding: 4px 0;
-  width: 100%;
+  width: auto;
 }
 
 .add-subtask-inline-btn:hover {
@@ -310,19 +310,15 @@
 }
 
 .add-subtask-inline-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   stroke-width: 2.5;
   flex-shrink: 0;
-  border: 1px solid var(--border-dark);
-  border-radius: 50%;
-  padding: 2px;
+  margin-left: -2px;
 }
 
 .add-subtask-inline-btn:hover svg {
-  border-color: var(--text-primary);
   color: var(--text-primary);
-  background: var(--bg-secondary);
 }
 
 .add-subtask-label {
