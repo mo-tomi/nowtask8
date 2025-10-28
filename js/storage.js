@@ -3,7 +3,9 @@ const STORAGE_KEYS = {
   ROUTINES: 'nowtask_routines',
   SHIFT_PRESETS: 'nowtask_shift_presets',
   SHIFTS: 'nowtask_shifts',
-  SETTINGS: 'nowtask_settings'
+  SETTINGS: 'nowtask_settings',
+  TEMPLATES: 'nowtask_templates',
+  MULTIDAY_PATTERNS: 'nowtask_multiday_patterns'
 };
 
 const Storage = {
@@ -104,6 +106,46 @@ const Storage = {
     } catch (error) {
       console.error('設定の読み込みに失敗しました:', error);
       return {};
+    }
+  },
+
+  saveTemplates(templates) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.TEMPLATES, JSON.stringify(templates));
+      return true;
+    } catch (error) {
+      console.error('テンプレートの保存に失敗しました:', error);
+      return false;
+    }
+  },
+
+  loadTemplates() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.TEMPLATES);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('テンプレートの読み込みに失敗しました:', error);
+      return [];
+    }
+  },
+
+  saveMultiDayPatterns(patterns) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.MULTIDAY_PATTERNS, JSON.stringify(patterns));
+      return true;
+    } catch (error) {
+      console.error('複数日パターンの保存に失敗しました:', error);
+      return false;
+    }
+  },
+
+  loadMultiDayPatterns() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.MULTIDAY_PATTERNS);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('複数日パターンの読み込みに失敗しました:', error);
+      return [];
     }
   },
 

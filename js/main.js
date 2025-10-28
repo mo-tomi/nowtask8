@@ -8,6 +8,7 @@ const App = {
     TaskManager.init();
     TaskEditor.init();
     SubtaskDetail.init();
+    TemplateManager.init();
     Calendar.init();
     RoutineManager.init();
     ShiftManager.init();

@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="css/task.css">
   <link rel="stylesheet" href="css/calendar.css">
   <link rel="stylesheet" href="css/stats.css">
+  <link rel="stylesheet" href="css/template.css">
 </head>
 <body>
   <div class="app-container">
@@ -406,6 +407,21 @@
           </div>
         </div>
 
+        <!-- タスク管理 -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">タスク管理</h3>
+
+          <div class="settings-item">
+            <button class="settings-btn" id="manageTemplatesBtn">テンプレートを管理</button>
+            <p class="settings-description">タスクの雛形を登録・編集（クイック入力用）</p>
+          </div>
+
+          <div class="settings-item">
+            <button class="settings-btn" id="manageMultiDayPatternsBtn">複数日パターンを管理</button>
+            <p class="settings-description">複数日のタスクパターンを作成・適用</p>
+          </div>
+        </div>
+
         <!-- ルーティン設定 -->
         <div class="settings-section">
           <h3 class="settings-section-title">ルーティン設定</h3>
@@ -709,6 +725,110 @@
     </div>
   </div>
 
+  <!-- テンプレート管理モーダル -->
+  <div class="modal-overlay" id="templateModal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">テンプレート管理</h2>
+        <button class="modal-close-btn" id="templateCloseBtn">×</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- テンプレート一覧 -->
+        <div class="template-list" id="templateList">
+          <!-- JSでテンプレートを生成 -->
+        </div>
+
+        <!-- テンプレート追加ボタン -->
+        <button class="add-template-btn" id="addTemplateBtn">+ テンプレートを追加</button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- テンプレート編集モーダル -->
+  <div class="modal-overlay" id="templateEditModal" style="display: none;">
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h2 class="modal-title">テンプレート編集</h2>
+        <button class="modal-close-btn" id="templateEditCloseBtn">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="templateEditForm">
+
+          <!-- テンプレート名 -->
+          <div class="template-form-group">
+            <label class="template-form-label">テンプレート名</label>
+            <input type="text" class="template-form-input" id="editTemplateName" placeholder="例: メイン睡眠" required>
+          </div>
+
+          <!-- カテゴリー -->
+          <div class="template-form-group">
+            <label class="template-form-label">カテゴリー</label>
+            <select class="template-form-select" id="editTemplateCategory">
+              <option value="睡眠">睡眠</option>
+              <option value="食事">食事</option>
+              <option value="カフェイン">カフェイン</option>
+              <option value="仕事">仕事</option>
+              <option value="自由時間">自由時間</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+
+          <!-- 所要時間 -->
+          <div class="template-form-group">
+            <label class="template-form-label">所要時間（分・任意）</label>
+            <select class="template-form-select" id="editTemplateDuration">
+              <option value="">時間なし</option>
+              <option value="5">5分</option>
+              <option value="10">10分</option>
+              <option value="15">15分</option>
+              <option value="30">30分</option>
+              <option value="45">45分</option>
+              <option value="60">1時間</option>
+              <option value="90">1時間30分</option>
+              <option value="120">2時間</option>
+              <option value="150">2時間30分</option>
+              <option value="180">3時間</option>
+              <option value="210">3時間30分</option>
+              <option value="240">4時間</option>
+              <option value="270">4時間30分</option>
+              <option value="300">5時間</option>
+              <option value="330">5時間30分</option>
+              <option value="360">6時間</option>
+              <option value="390">6時間30分</option>
+              <option value="420">7時間</option>
+              <option value="450">7時間30分</option>
+              <option value="480">8時間</option>
+            </select>
+          </div>
+
+          <!-- 開始時刻 -->
+          <div class="template-form-group">
+            <label class="template-form-label">デフォルト開始時刻（任意）</label>
+            <input type="time" class="template-form-input" id="editTemplateStartTime">
+            <p class="template-form-description">この時刻をデフォルトとして使用</p>
+          </div>
+
+          <!-- カレンダーから追加可能 -->
+          <div class="template-form-group">
+            <label class="template-form-checkbox-label">
+              <input type="checkbox" id="editTemplateAddFromCalendar" checked>
+              <span>カレンダーから追加可能</span>
+            </label>
+            <p class="template-form-description">クイック追加UIに表示</p>
+          </div>
+
+          <!-- ボタン -->
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="deleteTemplateBtn">削除</button>
+            <button type="submit" class="btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- JavaScript読み込み -->
   <script src="js/storage.js"></script>
   <script src="js/gauge.js"></script>
@@ -717,6 +837,7 @@
   <script src="js/task-gestures.js"></script>
   <script src="js/task-edit.js"></script>
   <script src="js/subtask-detail.js"></script>
+  <script src="js/template.js"></script>
   <script src="js/routine.js"></script>
   <script src="js/shift.js"></script>
   <script src="js/calendar.js"></script>
