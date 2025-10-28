@@ -15,6 +15,8 @@ const TaskEditor = {
     const addSubtaskBtn = document.getElementById('addSubtaskBtn');
     const tagInput = document.getElementById('tagInput');
     const priorityBtns = document.querySelectorAll('.priority-btn');
+    const applyTemplateBtn = document.getElementById('applyTemplateBtn');
+    const applyPatternBtn = document.getElementById('applyPatternBtn');
 
     // 時間入力の自動計算
     const startTimeInput = document.getElementById('editStartTime');
@@ -89,6 +91,20 @@ const TaskEditor = {
         btn.classList.add('active');
       });
     });
+
+    // テンプレート適用ボタン
+    if (applyTemplateBtn) {
+      applyTemplateBtn.addEventListener('click', () => {
+        this.showTemplateSelectionModal();
+      });
+    }
+
+    // パターン適用ボタン
+    if (applyPatternBtn) {
+      applyPatternBtn.addEventListener('click', () => {
+        this.showPatternSelectionModal();
+      });
+    }
   },
 
   openModal(taskId, defaultDate) {
@@ -533,5 +549,225 @@ const TaskEditor = {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  },
+
+  showTemplateSelectionModal() {
+    if (typeof TemplateManager === 'undefined' || !TemplateManager.templates) {
+      alert('テンプレートが見つかりません');
+      return;
+    }
+
+    const templates = TemplateManager.templates;
+    if (templates.length === 0) {
+      alert('テンプレートがありません。先にテンプレートを作成してください。');
+      return;
+    }
+
+    // カテゴリごとにグループ化
+    const categories = {};
+    templates.forEach(template => {
+      if (!categories[template.category]) {
+        categories[template.category] = [];
+      }
+      categories[template.category].push(template);
+    });
+
+    // モーダルを作成
+    const categoriesHtml = Object.keys(categories).map(category => `
+      <div class="template-category-section">
+        <div class="template-category-title">${category}</div>
+        <div class="template-items">
+          ${categories[category].map(template => `
+            <div class="template-selection-item" data-template-id="${template.id}">
+              <div class="template-item-name">${this.escapeHtml(template.name)}</div>
+              <div class="template-item-duration">${template.duration ? template.duration + '分' : ''}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    const modalHtml = `
+      <div class="modal" id="templateSelectionModal" style="display: flex;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">テンプレートを選択</h2>
+            <button class="modal-close-btn" id="templateSelectionCloseBtn">×</button>
+          </div>
+          <div class="modal-body">
+            ${categoriesHtml}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // モーダルを挿入
+    const existingModal = document.getElementById('templateSelectionModal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // イベントリスナーを設定
+    const modal = document.getElementById('templateSelectionModal');
+    const closeBtn = document.getElementById('templateSelectionCloseBtn');
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        modal.remove();
+      });
+    }
+
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+
+    // テンプレート選択
+    const templateItems = document.querySelectorAll('.template-selection-item');
+    templateItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const templateId = item.dataset.templateId;
+        this.applyTemplate(templateId);
+        modal.remove();
+      });
+    });
+  },
+
+  applyTemplate(templateId) {
+    const template = TemplateManager.templates.find(t => t.id === templateId);
+    if (!template) return;
+
+    // フォームにテンプレートの値を適用
+    const taskNameInput = document.getElementById('editTaskName');
+    const durationInput = document.getElementById('editDuration');
+    const tagInput = document.getElementById('tagInput');
+
+    if (taskNameInput && !taskNameInput.value) {
+      taskNameInput.value = template.name;
+    }
+
+    if (durationInput && template.duration) {
+      durationInput.value = template.duration;
+      this.calculateEndTime();
+    }
+
+    if (template.tags && template.tags.length > 0) {
+      template.tags.forEach(tag => {
+        if (!this.currentTask.tags.includes(tag)) {
+          this.addTag(tag);
+        }
+      });
+    }
+
+    console.log('テンプレートを適用しました:', template.name);
+  },
+
+  showPatternSelectionModal() {
+    if (typeof MultiDayPatternManager === 'undefined' || !MultiDayPatternManager.patterns) {
+      alert('パターンが見つかりません');
+      return;
+    }
+
+    const patterns = MultiDayPatternManager.patterns;
+    if (patterns.length === 0) {
+      alert('パターンがありません。先にパターンを作成してください。');
+      return;
+    }
+
+    const modalHtml = `
+      <div class="modal" id="patternSelectionModalInEdit" style="display: flex;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">複数日パターンを選択</h2>
+            <button class="modal-close-btn" id="patternSelectionInEditCloseBtn">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="pattern-selection-list">
+              ${patterns.map(pattern => `
+                <div class="pattern-selection-item" data-pattern-id="${pattern.id}">
+                  <div class="pattern-item-header">
+                    <div class="pattern-item-name">${this.escapeHtml(pattern.name)}</div>
+                    <div class="pattern-item-days">${pattern.days}日間</div>
+                  </div>
+                  <div class="pattern-item-summary">
+                    ${pattern.dayPatterns.map((day, idx) =>
+                      `<span class="pattern-day-label">Day${idx + 1}: ${this.escapeHtml(day.label || '')} (${day.tasks.length}タスク)</span>`
+                    ).join(' ')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // モーダルを挿入
+    const existingModal = document.getElementById('patternSelectionModalInEdit');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // イベントリスナーを設定
+    const modal = document.getElementById('patternSelectionModalInEdit');
+    const closeBtn = document.getElementById('patternSelectionInEditCloseBtn');
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        modal.remove();
+      });
+    }
+
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+
+    // パターン選択
+    const patternItems = document.querySelectorAll('#patternSelectionModalInEdit .pattern-selection-item');
+    patternItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const patternId = item.dataset.patternId;
+        this.applyPattern(patternId);
+        modal.remove();
+      });
+    });
+  },
+
+  applyPattern(patternId) {
+    const startTimeInput = document.getElementById('editStartTime');
+    const startDate = startTimeInput.value ? new Date(startTimeInput.value).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+
+    const tasksToAdd = MultiDayPatternManager.applyPatternToDate(patternId, startDate);
+
+    if (!tasksToAdd || tasksToAdd.length === 0) {
+      alert('パターンの適用に失敗しました');
+      return;
+    }
+
+    // タスクを追加
+    TaskManager.tasks.push(...tasksToAdd);
+    Storage.saveTasks(TaskManager.tasks);
+
+    // 表示を更新
+    TaskManager.renderTasks();
+    Gauge.updateGauge();
+    if (window.Calendar) Calendar.renderCalendar();
+
+    const pattern = MultiDayPatternManager.patterns.find(p => p.id === patternId);
+    alert(`パターン「${pattern.name}」を適用しました\n${tasksToAdd.length}個のタスクを追加しました`);
+
+    // モーダルを閉じる
+    this.closeModal();
+
+    console.log('パターンを適用しました:', pattern.name, tasksToAdd);
   }
 };

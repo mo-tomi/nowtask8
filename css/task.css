@@ -721,6 +721,89 @@
   margin-bottom: var(--spacing-lg);
 }
 
+/* クイックアクションボタン */
+.quick-action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.quick-action-btn {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-action-btn:hover {
+  background: var(--border-light);
+  border-color: var(--text-secondary);
+}
+
+.quick-action-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--text-primary);
+  flex-shrink: 0;
+}
+
+/* テンプレート選択モーダル */
+.template-category-section {
+  margin-bottom: 20px;
+}
+
+.template-category-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.template-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.template-selection-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.template-selection-item:hover {
+  background: var(--border-light);
+  border-color: var(--text-secondary);
+}
+
+.template-item-name {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.template-item-duration {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
 .form-label {
   display: block;
   font-size: 13px;
