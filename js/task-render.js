@@ -314,8 +314,9 @@ Object.assign(TaskManager, {
     const menuButtons = document.querySelectorAll('.task-menu');
     menuButtons.forEach(button => {
       button.addEventListener('click', (e) => {
+        e.stopPropagation();
         const taskId = e.currentTarget.dataset.taskId;
-        this.showTaskMenu(taskId);
+        this.showTaskContextMenu(e.currentTarget, taskId);
       });
     });
 
@@ -439,5 +440,105 @@ Object.assign(TaskManager, {
     if (container) container.style.display = 'none';
     if (addBtn) addBtn.style.display = 'flex';
     if (input) input.value = '';
+  },
+
+  showTaskContextMenu(button, taskId) {
+    // 既存のメニューを削除
+    const existingMenu = document.querySelector('.task-context-menu');
+    if (existingMenu) {
+      existingMenu.remove();
+    }
+
+    // メニューを作成
+    const menu = document.createElement('div');
+    menu.className = 'task-context-menu';
+    menu.innerHTML = `
+      <div class="context-menu-item" data-action="edit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+        <span>編集</span>
+      </div>
+      <div class="context-menu-item" data-action="duplicate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span>複製</span>
+      </div>
+      <div class="context-menu-item danger" data-action="delete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        <span>削除</span>
+      </div>
+    `;
+
+    // ボタンの位置を取得
+    const rect = button.getBoundingClientRect();
+    menu.style.position = 'fixed';
+    menu.style.top = `${rect.bottom + 5}px`;
+    menu.style.left = `${rect.left - 120}px`; // メニュー幅150pxの80%左に
+
+    document.body.appendChild(menu);
+
+    // メニューアイテムのクリックイベント
+    menu.querySelectorAll('.context-menu-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const action = e.currentTarget.dataset.action;
+
+        if (action === 'edit') {
+          this.showTaskMenu(taskId);
+        } else if (action === 'duplicate') {
+          this.duplicateTask(taskId);
+        } else if (action === 'delete') {
+          this.deleteTask(taskId);
+        }
+
+        menu.remove();
+      });
+    });
+
+    // 外側クリックでメニューを閉じる
+    setTimeout(() => {
+      const closeMenu = (e) => {
+        if (!menu.contains(e.target)) {
+          menu.remove();
+          document.removeEventListener('click', closeMenu);
+        }
+      };
+      document.addEventListener('click', closeMenu);
+    }, 0);
+  },
+
+  duplicateTask(taskId) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const now = new Date().toISOString();
+    const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+    const newTaskId = `task_${dateStr}_${Date.now()}`;
+
+    const newTask = {
+      ...task,
+      id: newTaskId,
+      name: task.name + ' (コピー)',
+      completed: false,
+      completedAt: null,
+      createdAt: now,
+      updatedAt: now,
+      subtasks: task.subtasks ? JSON.parse(JSON.stringify(task.subtasks)) : []
+    };
+
+    this.tasks.push(newTask);
+    Storage.saveTasks(this.tasks);
+
+    this.renderTasks();
+    Gauge.updateGauge();
+    if (window.Calendar) Calendar.renderCalendar();
+
+    console.log('タスクを複製しました:', newTask.name);
   }
 });
